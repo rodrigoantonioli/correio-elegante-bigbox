@@ -55,6 +55,22 @@ app.get('/admin', checkAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'private', 'admin.html'));
 });
 
+// Nova rota para a página de histórico
+app.get('/history', checkAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'private', 'history.html'));
+});
+
+// Nova rota de API para buscar o conteúdo do log
+app.get('/api/history', checkAuth, (req, res) => {
+    fs.readFile(logFilePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Erro ao ler arquivo de log:', err);
+            return res.status(500).send('Erro ao ler o log.');
+        }
+        res.type('text/plain').send(data);
+    });
+});
+
 // Rota de Logout
 app.get('/logout', (req, res) => {
     req.session = null; // Destrói a sessão
@@ -64,7 +80,7 @@ app.get('/logout', (req, res) => {
 // Função para salvar uma mensagem no arquivo de log
 const appendToLogFile = (message) => {
     const timestamp = new Date(message.timestamp).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-    const logEntry = `[${timestamp}] Para: "${message.recipient}" | De: "${message.sender}" | Mensagem: "${message.message}"\n`;
+    const logEntry = `[${timestamp}] [IP: ${message.ip}] Para: "${message.recipient}" | De: "${message.sender}" | Mensagem: "${message.message}"\n`;
     
     fs.appendFile(logFilePath, logEntry, (err) => {
         if (err) {
@@ -130,7 +146,13 @@ io.on('connection', (socket) => {
 
     socket.on('newMessage', (msg) => {
         console.log('Nova mensagem recebida:', msg);
-        const fullMessage = { ...msg, id: Date.now(), timestamp: new Date() };
+
+        // Captura o endereço IP do remetente
+        const ip = socket.handshake.address.includes('::') 
+            ? socket.handshake.address.split(':').pop()
+            : socket.handshake.address;
+
+        const fullMessage = { ...msg, id: Date.now(), timestamp: new Date(), ip: ip };
         messageQueue.push(fullMessage);
         messageLog.push(fullMessage);
         appendToLogFile(fullMessage);

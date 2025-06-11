@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Mensagens - Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .history-container {
+            background-color: #f1f2f6;
+            color: #2c3e50;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 70vh;
+            overflow-y: auto;
+            border: 1px solid #dfe4ea;
+        }
+        .container footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="/images/logo.png" alt="BigBox Logo" class="logo">
+            <h1>Histórico Completo</h1>
+            <p>Log de auditoria de todas as mensagens enviadas.</p>
+        </header>
+        <main>
+            <pre id="history-log" class="history-container">Carregando histórico...</pre>
+        </main>
+        <footer>
+            <a href="/admin">Painel Principal</a>
+            <a href="/logout">Sair (Logout)</a>
+        </footer>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/api/history')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Falha ao carregar o histórico. Você está logado?');
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    const logContainer = document.getElementById('history-log');
+                    logContainer.textContent = text.trim() ? text : 'Nenhuma mensagem no histórico ainda.';
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    document.getElementById('history-log').textContent = 'Erro ao carregar o histórico.';
+                });
+        });
+    </script>
+</body>
+</html> 
