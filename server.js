@@ -152,10 +152,10 @@ io.on('connection', (socket) => {
     socket.on('newMessage', (msg) => {
         console.log('Nova mensagem recebida:', msg);
 
-        // Captura o endereço IP do remetente
-        const ip = socket.handshake.address.includes('::') 
-            ? socket.handshake.address.split(':').pop()
-            : socket.handshake.address;
+        // Lógica correta para obter IP atrás de um proxy (como no Render)
+        // O cabeçalho 'x-forwarded-for' é adicionado por proxies e contém o IP original do cliente.
+        const forwardedFor = socket.handshake.headers['x-forwarded-for'];
+        const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : socket.handshake.address;
 
         const fullMessage = { ...msg, id: Date.now(), timestamp: new Date(), ip: ip };
         messageQueue.push(fullMessage);
