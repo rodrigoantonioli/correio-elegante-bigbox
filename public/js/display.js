@@ -36,7 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let carouselTimeout;
     let currentMessageTimeout;
     let messageStartTime = null;
-    const MIN_DISPLAY_TIME = 20000;
+    const MIN_DISPLAY_TIME = 20000; // 20 segundos
+    const MAX_DISPLAY_TIME = 60000; // 1 minuto
     let ptBrVoices = [];
     let totalMessages = 0;
 
@@ -152,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`Modo alterado para: ${newMode}`);
     };
 
-    const startDisplay = (msg, duration) => {
+    const startDisplay = (msg) => {
         setScreenState('message');
         displayWrapper.classList.remove('hidden');
 
@@ -171,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const fullText = `Correio Elegante para ${msg.recipient}. A mensagem é: ${msg.message}. Enviado por: ${msg.sender}.`;
         speakMessage(fullText);
         messageStartTime = Date.now();
-        currentMessageTimeout = setTimeout(finishDisplay, duration);
+        currentMessageTimeout = setTimeout(finishDisplay, MAX_DISPLAY_TIME);
     };
 
     const finishDisplay = () => {
@@ -189,23 +190,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Listeners de Socket ---
     socket.on('initialState', state => {
+        console.log("Estado inicial recebido:", state);
         switchMode(state.displayMode);
         displayedHistory = state.displayedHistory || [];
         totalMessages = state.totalMessages || 0;
         totalCountEl.textContent = totalMessages;
+
+        // Se o telão estava ocupado quando reconectamos, retoma a exibição
+        if (state.isBusy && state.currentMessage) {
+            console.log("Retomando exibição da mensagem atual...");
+            const remainingTime = state.currentMessage.duration - (Date.now() - new Date(state.currentMessage.timestamp).getTime());
+            
+            if (remainingTime > 1000) { // Se resta mais de 1 segundo
+                // Define o histórico para que o carrossel funcione corretamente
+                displayedHistory = state.displayedHistory; 
+                startDisplay(state.currentMessage);
+            } else {
+                // Se o tempo já expirou, notifica o servidor e vai para a espera
+                setScreenState('waiting');
+                socket.emit('messageDisplayed');
+            }
+        } else {
+            // Se não, inicia normalmente na tela de espera
+            setScreenState('waiting');
+        }
     });
     socket.on('modeUpdate', newMode => switchMode(newMode));
     socket.on('displayMessage', data => {
         totalMessages = data.totalMessages;
         totalCountEl.textContent = totalMessages;
         displayedHistory = data.history;
-        startDisplay(data.message, data.message.duration);
+        startDisplay(data.message);
     });
     socket.on('queueUpdate', (data) => {
         totalMessages = data.totalMessages;
         totalCountEl.textContent = totalMessages;
         queueCountSpan.textContent = data.count;
         queueCounterDiv.classList.toggle('hidden', data.count === 0);
+
+        // Lógica para interromper a mensagem atual se uma nova entrar na fila
+        if (data.count > 0 && messageStartTime) {
+            const elapsedTime = Date.now() - messageStartTime;
+            if (elapsedTime >= MIN_DISPLAY_TIME) {
+                console.log('Fila com nova mensagem e tempo mínimo atingido. Exibindo a próxima.');
+                finishDisplay();
+            }
+        }
+
         if (data.new && data.count > 0) {
             notificationSound.play();
             queueCounterDiv.classList.add('new-message');

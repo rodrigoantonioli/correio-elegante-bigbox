@@ -31,6 +31,7 @@ let connectedClients = {}; // Para rastrear clientes
 let blockedIps = new Set(); // Para armazenar IPs bloqueados
 let displayedMessagesLog = []; // Histórico para o carrossel
 let currentDisplayMode = 'default'; // Modos: 'default', 'carousel', 'ticker'
+let currentMessage = null; // Rastreia a mensagem atualmente em exibição
 
 // Estrutura para Estatísticas
 const stats = {
@@ -144,10 +145,16 @@ const readPredefinedMessages = () => {
     try {
         if (fs.existsSync(messagesFilePath)) {
             const data = fs.readFileSync(messagesFilePath, 'utf8');
-            return JSON.parse(data);
+            // Adiciona um try-catch interno para o parse, caso o arquivo esteja corrompido
+            try {
+                return JSON.parse(data);
+            } catch (parseError) {
+                console.error('Erro ao fazer parse de messages.json:', parseError);
+                // Se o parse falhar, retorna as mensagens padrão para não quebrar o servidor
+            }
         }
-    } catch (error) {
-        console.error('Erro ao ler messages.json:', error);
+    } catch (readError) {
+        console.error('Erro ao ler messages.json:', readError);
     }
     // Retorna mensagens padrão se o arquivo não existir ou derro
     return [
@@ -166,22 +173,18 @@ const processQueue = () => {
     if (messageQueue.length > 0 && !isDisplayBusy) {
         isDisplayBusy = true;
         
-        // Define a duração ANTES de remover o item da fila.
-        // 20s se houver mais de uma mensagem (ou seja, sobrará fila), 60s se for a última.
-        const duration = messageQueue.length > 1 ? 20000 : 60000; 
-
         const nextMessage = messageQueue.shift();
-        const messageToSend = { ...nextMessage, duration };
-        
+        currentMessage = nextMessage; // Armazena a mensagem atual
+
         // Adiciona ao histórico de exibidas ANTES de enviar
-        displayedMessagesLog.push(messageToSend);
+        displayedMessagesLog.push(nextMessage);
         // Mantém o histórico com um tamanho razoável, ex: últimas 50 mensagens
         if (displayedMessagesLog.length > 50) {
             displayedMessagesLog.shift();
         }
 
         io.emit('displayMessage', { 
-            message: messageToSend, 
+            message: nextMessage, 
             history: displayedMessagesLog,
             totalMessages: messageLog.length
         });
@@ -259,7 +262,9 @@ io.on('connection', (socket) => {
     socket.emit('initialState', { 
         displayMode: currentDisplayMode,
         displayedHistory: displayedMessagesLog,
-        totalMessages: messageLog.length
+        totalMessages: messageLog.length,
+        isBusy: isDisplayBusy,
+        currentMessage: currentMessage // Envia a mensagem atual se houver
     });
 
     updateClientsAdmin();
@@ -298,6 +303,19 @@ io.on('connection', (socket) => {
             socket.join('stats_admin_room');
             updateStatsAdmin(); // Envia os dados atuais
         }
+        if (page === '/display') {
+            socket.join('display_room');
+            console.log('Cliente de telão se conectou e foi adicionado à sala.');
+            
+            // Envia o estado atual completo para o novo cliente de telão
+            socket.emit('initialState', { 
+                displayMode: currentDisplayMode,
+                displayedHistory: displayedMessagesLog,
+                totalMessages: messageLog.length,
+                isBusy: isDisplayBusy,
+                currentMessage: currentMessage // Envia a mensagem atual se houver
+            });
+        }
         updateClientsAdmin();
         updateStatsAdmin();
     });
@@ -329,9 +347,10 @@ io.on('connection', (socket) => {
     });
 
     socket.on('messageDisplayed', () => {
-        console.log('Telão terminou de exibir a mensagem.');
         isDisplayBusy = false;
-        processQueue(); // Remove o delay de 2 segundos para a próxima mensagem ser imediata
+        currentMessage = null; // Limpa a mensagem atual
+        console.log('Telão liberado. Processando próxima mensagem se houver.');
+        processQueue();
     });
 
     socket.on('getMessages', () => {

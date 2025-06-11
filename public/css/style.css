@@ -9,10 +9,12 @@
     --box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
+/* ==========================================================================
+   Estilos Gerais (Páginas de Admin, Login, Envio)
+   ========================================================================== */
 body {
     font-family: 'Poppins', sans-serif;
     background-color: #F2EBF9;
-    /* Fundo temático de toalha de mesa quadriculada (sutil) */
     background-image:
         linear-gradient(rgba(93, 42, 142, 0.07) 1px, transparent 1px),
         linear-gradient(to right, rgba(93, 42, 142, 0.07) 1px, transparent 1px);
@@ -27,12 +29,12 @@ body {
     box-sizing: border-box;
 }
 
-.container, .display-container {
+.container {
     background-color: var(--bg-color);
     padding: 30px 40px;
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
-    max-width: 500px;
+    max-width: 600px;
     width: 100%;
     text-align: center;
     border: 1px solid #ddd;
@@ -40,19 +42,21 @@ body {
 
 header {
     margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
 }
 
 header .logo {
     max-width: 250px;
-    margin-bottom: 20px;
 }
 
 header h1 {
     font-family: 'Lilita One', cursive;
     color: var(--primary-color);
     font-size: 2.5rem;
-    margin-top: 0;
-    margin-bottom: 5px;
+    margin: 0;
 }
 
 .form-group {
@@ -66,22 +70,22 @@ label {
     font-weight: 500;
 }
 
-input[type="text"], input[type="password"], select {
+input[type="text"], input[type="password"], select, textarea {
     width: 100%;
     padding: 12px;
     border: 1px solid #ddd;
     border-radius: var(--border-radius);
     box-sizing: border-box;
     font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-input[type="text"]:focus, input[type="password"]:focus, select:focus {
+input[type="text"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(93, 42, 142, 0.2);
 }
-
 
 button {
     background: linear-gradient(45deg, var(--primary-color), #8e44ad);
@@ -111,571 +115,401 @@ button:hover {
     font-weight: 500;
 }
 
-/* Telão */
-.display-container {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    max-width: 100%;
-    height: 100vh;
-    padding: 20px;
-}
-
-#message-display .message-card {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 5vh 5vw;
-    border: 3px solid var(--accent-color);
-    border-radius: 20px;
-    max-width: 90vw;
-    min-height: 80vh;
-}
-
-#message-display .recipient, #message-display .sender {
-    font-family: 'Lilita One', cursive;
-    font-size: 4rem;
-    color: var(--primary-color);
-}
-
-#message-display .message-text {
-    font-size: 5rem;
-    font-weight: 700;
-    color: var(--text-color);
-    margin: 5vh 0;
-}
-
-#display-logo {
-    position: fixed;
-    bottom: 50px;
-    right: 50px;
-    max-width: 150px;
-    opacity: 0.8;
-}
-
-/* QR Code */
-#qr-code-display h2 {
-    font-family: 'Lilita One', cursive;
-    font-size: 3.5rem;
-    color: var(--primary-color);
-    text-shadow: 2px 2px #fff;
-}
-
-#qr-code {
-    border: 5px solid var(--bg-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-}
-
-/* Estilos do QR Code Pequeno */
-#small-qr-container {
-    position: fixed;
-    bottom: 50px;
-    left: 50px;
-    z-index: 1001;
-    background: rgba(255, 255, 255, 0.98);
-    padding: 15px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    text-align: center;
-    transition: opacity 0.5s ease;
-}
-
-#small-qr-container canvas {
-    border: 5px solid var(--bg-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-}
-
-/* Contador */
-#queue-counter {
-    position: fixed;
-    top: 50px;
-    right: 50px;
-    z-index: 1001;
-    background: var(--accent-color);
-    color: var(--primary-color);
-    font-family: 'Lilita One', cursive;
-    font-size: 1.8rem;
-    border: 3px solid var(--primary-color);
-}
-
-#queue-counter p {
-    margin: 0;
-}
-
-/* Estilos do Admin */
-.admin-section {
-    margin-bottom: 40px;
-}
-
-#messages-list .message-item {
+/* ==========================================================================
+   Estilos de Componentes de Administração
+   ========================================================================== */
+.admin-nav {
     display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-#messages-list input {
-    flex-grow: 1;
-    margin-right: 10px;
-}
-
-#addMessageBtn {
-    background-color: #28a745;
-    margin-right: 10px;
-}
-
-#addMessageBtn:hover {
-    background-color: #218838;
-}
-
-.log-container {
-    max-height: 400px;
-    overflow-y: auto;
-    border: 1px solid #ddd;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 30px;
+    padding: 10px;
+    background-color: rgba(93, 42, 142, 0.05);
     border-radius: var(--border-radius);
 }
-
-#messageLog {
-    width: 100%;
-    border-collapse: collapse;
+.admin-nav a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 15px;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+.admin-nav a:hover {
+    background-color: rgba(93, 42, 142, 0.1);
 }
 
-#messageLog th, #messageLog td {
-    padding: 12px;
-    border-bottom: 1px solid #ddd;
+.admin-section {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: var(--border-radius);
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     text-align: left;
 }
-
-#messageLog th {
-    background-color: var(--secondary-color);
-    position: sticky;
-    top: 0;
-}
-
-/* Estilos da Página de Admin Melhorada */
 .admin-section h2 {
     font-family: 'Lilita One', cursive;
     color: var(--primary-color);
+    margin-top: 0;
     margin-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
 }
-
-#messages-list-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
 .message-item-admin {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 10px;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: var(--border-radius);
-    border: 1px solid #eee;
+    margin-bottom: 10px;
 }
-
 .message-item-admin textarea {
     flex-grow: 1;
-    border: none;
-    background: transparent;
-    font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
-    resize: none;
-    overflow-y: hidden; /* Controlado pelo JS */
-    min-height: 24px;
-    line-height: 1.5;
-    padding: 5px;
-    border-left: 3px solid var(--primary-color);
+    min-height: 40px;
+    height: auto;
+    resize: vertical;
 }
-
-.message-item-admin textarea:focus {
-    outline: none;
-    background: #fff;
-    box-shadow: 0 0 5px rgba(0,0,0,0.05);
-}
-
 .btn-delete {
-    background: transparent;
+    background: #e74c3c;
+    color: white;
     border: none;
-    font-size: 1.5rem;
-    color: #e74c3c;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
     cursor: pointer;
-    padding: 5px;
-    transition: color 0.2s, transform 0.2s;
-    width: auto;
+    flex-shrink: 0;
 }
-
-.btn-delete:hover {
-    color: #c0392b;
-    transform: scale(1.1);
-    box-shadow: none;
-}
-
+.btn-delete:hover { background: #c0392b; }
 .admin-actions {
     display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-top: 25px;
+    gap: 10px;
+    margin-top: 20px;
 }
+.admin-actions button { width: auto; flex-grow: 1; }
+.admin-actions .btn-add { background-color: #28a745; }
+.admin-actions .btn-add:hover { background-color: #218838; }
+.admin-actions .btn-save { background-color: #3498db; }
+.admin-actions .btn-save:hover { background-color: #2980b9; }
 
-.admin-actions button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: auto;
-    padding: 10px 20px;
-}
+/* ==========================================================================
+   Estilos Específicos do Telão (.display-page)
+   ========================================================================== */
 
-.admin-actions .btn-add {
-    background: #27ae60;
-}
-
-.admin-actions .btn-add:hover {
-    background: linear-gradient(45deg, #38b356, #2d9246);
-}
-
-.admin-actions .btn-save:hover {
-    background-color: #0056b3;
-}
-
-/* --- Media Queries para Responsividade --- */
-
-@media (max-width: 768px) {
-
-    body {
-        padding: 10px; /* Reduz o espaçamento geral no celular */
-    }
-
-    .container, .display-container {
-        padding: 20px 15px; /* Reduz o padding dos containers principais */
-    }
-
-    header .logo {
-        max-width: 180px;
-    }
-    
-    header h1 {
-        font-size: 2rem;
-    }
-
-    /* Ajustes específicos para o Telão (display.html) em telas pequenas */
-    
-    /* Tela de QR Code principal */
-    #qr-code-display h2 {
-        font-size: 1.8rem;
-        margin-bottom: 20px;
-    }
-
-    #qr-code-display #qr-code {
-        width: 220px !important; /* Força o tamanho do canvas */
-        height: 220px !important;
-    }
-
-    /* Tela da mensagem sendo exibida */
-    #message-display .message-card {
-        padding: 20px;
-        min-height: auto;
-    }
-
-    #message-display .recipient, #message-display .sender {
-        font-size: 1rem;
-    }
-
-    #message-display .message-text {
-        font-size: 1.2rem;
-        margin: 25px 0;
-    }
-
-    /* Elementos flutuantes/fixos */
-    #display-logo {
-        max-width: 80px;
-        bottom: 15px;
-        right: 15px;
-    }
-
-    #queue-counter {
-        top: 15px;
-        right: 15px;
-        font-size: 1.2rem;
-        padding: 5px 12px;
-    }
-
-    #small-qr-container {
-        bottom: 15px;
-        left: 15px;
-        padding: 10px;
-    }
-
-    #small-qr-container canvas {
-        width: 80px !important;
-        height: 80px !important;
-    }
-
-    #small-qr-container p {
-        font-size: 0.7rem;
-        margin-top: 5px;
-        margin-bottom: 0;
-    }
-
-    /* Ajustes para a tela de Início do Telão */
-    #start-overlay h1 {
-        font-size: 2.2rem;
-    }
-    #start-overlay p {
-        font-size: 0.9rem;
-        padding: 0 10px;
-    }
-} 
-
-/* --- NOVOS ESTILOS PARA MODOS DE EXIBIÇÃO --- */
-
-/* Wrapper principal para centralizar conteúdo */
-.display-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
+body.display-page {
+    padding: 0;
     overflow: hidden;
+    background: #1a1a1a;
 }
 
-.mode-container {
+.display-page #start-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    color: #fff;
+    text-align: center;
+}
+.display-page #startButton {
+    font-size: 2rem;
+    padding: 20px 40px;
+    width: auto;
+    border-radius: 50px;
+}
+.display-page #start-overlay p {
+    margin-top: 20px;
+    font-size: 1.2rem;
+}
+
+.display-page #main-display-area {
+    width: 100vw;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-/* Modo Carrossel */
-#carousel-mode-container {
-    justify-content: space-between;
-    padding: 0 2vw;
+.display-page #waiting-screen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    background: radial-gradient(circle, #3a1d5a, var(--primary-color));
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.display-page #waiting-screen #qr-code {
+    border: 8px solid white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+.display-page #incentive-phrase {
+    font-family: 'Lilita One', cursive;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    animation: pulse 2s infinite ease-in-out;
+}
+.display-page #total-messages-counter {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    font-weight: 500;
+}
+
+.display-page #message-screen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    background-color: #f4f4f9;
+}
+.display-page #side-panel {
+    width: 320px;
+    flex-shrink: 0;
+    background-color: #fff;
+    box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    padding: 30px 10px;
+    text-align: center;
+    z-index: 10;
+}
+.display-page #side-logo {
+    max-width: 180px;
+}
+.display-page .side-title {
+    font-family: 'Lilita One', cursive;
+    font-size: 2.8rem;
+    color: var(--primary-color);
+    line-height: 1.1;
+}
+.display-page #side-qr-code canvas {
+    border: 4px solid #eee;
+    border-radius: var(--border-radius);
+}
+.display-page #side-qr-code p {
+    font-weight: 500;
+    color: var(--text-color);
+    margin-top: 10px;
+}
+.display-page #content-panel {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    overflow: hidden;
     box-sizing: border-box;
 }
 
-#carousel-slide {
-    width: 80vw;
-    flex-shrink: 1;
+.display-page .display-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.display-page .mode-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-#carousel-slide .message-card {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 5vh 5vw;
-    border: 3px solid var(--accent-color);
+.display-page .message-card {
+    background: #fff;
+    padding: clamp(20px, 4vw, 50px);
     border-radius: 20px;
-    position: relative; /* Para o botão de som */
+    border-left: 10px solid var(--primary-color);
+    box-shadow: var(--box-shadow);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    max-width: 95%;
 }
-#carousel-slide .recipient, #carousel-slide .sender {
+.display-page .message-card .recipient,
+.display-page .message-card .sender {
     font-family: 'Lilita One', cursive;
-    font-size: 3.5rem;
     color: var(--primary-color);
+    font-size: clamp(2rem, 5vw, 4rem);
+    margin: 0;
 }
-#carousel-slide .message-text {
-    font-size: 4.5rem;
-    font-weight: 700;
+.display-page .message-card .message-text {
+    font-weight: 500;
     color: var(--text-color);
-    margin: 4vh 0;
+    font-size: clamp(1.5rem, 5vw, 4.5rem);
+    margin: 3vh 0;
 }
 
-.carousel-nav {
-    background: transparent;
+.display-page #carousel-mode-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+.display-page #carousel-slide {
+    flex-grow: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.display-page .carousel-nav {
+    background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--primary-color);
     font-size: 4rem;
     cursor: pointer;
-    transition: color 0.3s, transform 0.3s;
-    width: auto;
+    transition: transform 0.2s, color 0.2s;
     padding: 20px;
+    width: auto;
 }
-.carousel-nav:hover {
-    color: #fff;
+.display-page .carousel-nav:hover {
+    color: #8e44ad;
     transform: scale(1.1);
 }
-
-.carousel-speak-btn {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    background: transparent;
-    border: 2px solid var(--primary-color);
+.display-page .carousel-speak-btn {
+    background: var(--accent-color);
     color: var(--primary-color);
+    border: none;
+    border-radius: 50%;
     width: 60px;
     height: 60px;
-    border-radius: 50%;
     font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
     padding: 0;
+    margin-top: 15px;
 }
-.carousel-speak-btn:hover {
-    background: var(--primary-color);
-    color: #fff;
-}
-.carousel-speak-btn.speaking {
-    animation: pulse 1s infinite;
-}
+.display-page .carousel-speak-btn:hover { transform: scale(1.1); }
+.display-page .carousel-speak-btn.speaking { animation: pulse 1s; }
 
-/* Modo Letreiro (Ticker) */
-#ticker-mode-container {
-    background-color: #111;
-    border-top: 5px solid var(--accent-color);
-    border-bottom: 5px solid var(--accent-color);
-}
-.ticker-wrap {
-    width: 100%;
+.display-page #ticker-mode-container {
     overflow: hidden;
-    white-space: nowrap;
+    width: 100%;
 }
-#ticker-content {
-    display: inline-block;
-    padding-left: 100%;
+.display-page .ticker-wrap {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+.display-page #ticker-content {
     font-family: 'Lilita One', cursive;
     font-size: 5rem;
     color: #fff;
+    white-space: nowrap;
+    display: inline-block;
+    padding-left: 100%;
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.8);
 }
-#ticker-content.animate {
-    animation: ticker-animation linear infinite;
+.display-page #ticker-content.animate {
+    animation: ticker-animation 60s linear infinite;
 }
 @keyframes ticker-animation {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
+    from { transform: translateX(100%); }
+    to { transform: translateX(-100%); }
 }
 
-@keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(93, 42, 142, 0.7); }
-    70% { box-shadow: 0 0 0 15px rgba(93, 42, 142, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(93, 42, 142, 0); }
-}
-
-/* --- Layout Principal do Telão --- */
-body, html {
-    overflow: hidden; /* Evita barras de rolagem no telão */
-}
-#main-display-area {
-    width: 100vw;
-    height: 100vh;
-    /* Fundo temático de toalha de mesa quadriculada (sutil) */
-    background-image:
-        linear-gradient(rgba(93, 42, 142, 0.07) 1px, transparent 1px),
-        linear-gradient(to right, rgba(93, 42, 142, 0.07) 1px, transparent 1px);
-    background-size: 20px 20px;
-    background-color: #F2EBF9;
-}
-
-/* --- MODO DE ESPERA --- */
-#waiting-screen {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    text-align: center;
-}
-#waiting-screen #qr-code {
-    border: 5px solid var(--bg-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-}
-#waiting-screen h2 {
-    font-family: 'Lilita One', cursive;
-    font-size: 3.5rem;
-    color: var(--primary-color);
-    text-shadow: 2px 2px #fff;
-}
-#total-messages-counter {
-    margin-top: 20px;
-    font-size: 1.8rem;
-    color: var(--primary-color);
-    font-weight: bold;
-}
-
-/* --- MODO DE MENSAGEM --- */
-#message-screen {
-    display: flex;
-    width: 100%;
-    height: 100%;
-}
-
-#side-panel {
-    width: 280px;
-    height: 100%;
-    background-color: #fff;
-    box-shadow: 4px 0 15px rgba(0,0,0,0.1);
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px;
-    box-sizing: border-box;
-    text-align: center;
-}
-#side-logo {
-    max-width: 150px;
-}
-.side-title {
-    font-family: 'Lilita One', cursive;
-    color: var(--primary-color);
-    font-size: 2.5rem;
-    line-height: 1;
-    margin: -40px 0; /* Puxa para cima para ocupar espaço */
-}
-.side-title p {
-    margin: 0;
-}
-#side-qr-code canvas {
-    border: 5px solid #f0f0f0;
-    border-radius: var(--border-radius);
-    max-width: 100%;
-    height: auto;
-}
-
-#content-panel {
-    flex-grow: 1;
-    height: 100%;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.display-wrapper {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Remove posicionamento antigo */
-#display-logo, #small-qr-container {
-    position: static;
-}
-
-/* Re-estiliza o contador de fila para o novo layout */
 #queue-counter {
-    position: absolute; /* Relativo ao #content-panel */
-    top: 50px;
-    right: 50px;
+    position: fixed;
+    top: 25px;
+    right: 30px;
     z-index: 1001;
     background: var(--accent-color);
     color: var(--primary-color);
+    padding: 8px 20px;
+    border-radius: 50px;
     font-family: 'Lilita One', cursive;
     font-size: 1.8rem;
     border: 3px solid var(--primary-color);
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
     display: flex;
-    justify-content: center;
     align-items: center;
+    gap: 10px;
+}
+#queue-counter.new-message {
+    transform: scale(1.2);
 }
 
 @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(93, 42, 142, 0.7); }
-    70% { box-shadow: 0 0 0 15px rgba(93, 42, 142, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(93, 42, 142, 0); }
-} 
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.95; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ==========================================================================
+   Media Queries
+   ========================================================================== */
+@media (max-width: 1200px) {
+    .display-page #side-panel {
+        width: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    body { padding: 10px; }
+    .container { padding: 20px; }
+
+    .display-page #message-screen {
+        flex-direction: column;
+    }
+    .display-page #side-panel {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .display-page #side-logo {
+        max-width: 100px;
+    }
+    .display-page .side-title {
+        display: none;
+    }
+    .display-page #side-qr-code canvas {
+        width: 80px !important;
+        height: 80px !important;
+    }
+    .display-page #side-qr-code p {
+        font-size: 0.8rem;
+    }
+    .display-page #content-panel {
+        padding: 15px;
+        flex-grow: 1;
+    }
+    .display-page .message-card .recipient,
+    .display-page .message-card .sender {
+        font-size: clamp(1.5rem, 7vw, 2rem);
+    }
+    .display-page .message-card .message-text {
+        font-size: clamp(1.2rem, 8vw, 2.2rem);
+    }
+    .display-page .carousel-nav {
+        font-size: 2.5rem;
+        padding: 10px;
+    }
+    .display-page .carousel-speak-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
+    }
+}
