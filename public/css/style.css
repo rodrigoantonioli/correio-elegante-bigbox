@@ -333,5 +333,94 @@ button:hover {
 }
 
 .admin-actions .btn-add:hover {
-    background: #2ecc71;
+    background: linear-gradient(45deg, #38b356, #2d9246);
+}
+
+/* --- Media Queries para Responsividade --- */
+
+@media (max-width: 768px) {
+
+    body {
+        padding: 10px; /* Reduz o espaçamento geral no celular */
+    }
+
+    .container, .display-container {
+        padding: 20px 15px; /* Reduz o padding dos containers principais */
+    }
+
+    header .logo {
+        max-width: 180px;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+
+    /* Ajustes específicos para o Telão (display.html) em telas pequenas */
+    
+    /* Tela de QR Code principal */
+    #qr-code-display h2 {
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+    }
+
+    #qr-code-display #qr-code {
+        width: 220px !important; /* Força o tamanho do canvas */
+        height: 220px !important;
+    }
+
+    /* Tela da mensagem sendo exibida */
+    #message-display .message-card {
+        padding: 20px;
+        min-height: auto;
+    }
+
+    #message-display .recipient, #message-display .sender {
+        font-size: 1.5rem;
+    }
+
+    #message-display .message-text {
+        font-size: 2rem;
+        margin: 25px 0;
+    }
+
+    /* Elementos flutuantes/fixos */
+    #display-logo {
+        max-width: 80px;
+        bottom: 15px;
+        right: 15px;
+    }
+
+    #queue-counter {
+        top: 15px;
+        right: 15px;
+        font-size: 1.2rem;
+        padding: 5px 12px;
+    }
+
+    #small-qr-container {
+        bottom: 15px;
+        left: 15px;
+        padding: 10px;
+    }
+
+    #small-qr-container canvas {
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+    #small-qr-container p {
+        font-size: 0.7rem;
+        margin-top: 5px;
+        margin-bottom: 0;
+    }
+
+    /* Ajustes para a tela de Início do Telão */
+    #start-overlay h1 {
+        font-size: 2.2rem;
+    }
+    #start-overlay p {
+        font-size: 0.9rem;
+        padding: 0 10px;
+    }
 } 
