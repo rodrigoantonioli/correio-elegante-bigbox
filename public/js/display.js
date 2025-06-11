@@ -1,209 +1,259 @@
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
-
-    // Registra o cliente na página de display
     socket.emit('register', '/display');
 
+    // --- Elementos Globais ---
     const startOverlay = document.getElementById('start-overlay');
     const startButton = document.getElementById('startButton');
-    const displayContainer = document.querySelector('.display-container');
-
-    const messageDisplayDiv = document.getElementById('message-display');
-    const qrCodeDiv = document.getElementById('qr-code-display');
-
-    const recipientSpan = document.getElementById('display-recipient');
-    const messageSpan = document.getElementById('display-message');
-    const senderSpan = document.getElementById('display-sender');
-
-    const qrCanvas = document.getElementById('qr-code');
-    const smallQrContainer = document.getElementById('small-qr-container');
-    const smallQrCanvas = document.getElementById('qr-code-small');
+    const mainDisplayArea = document.getElementById('main-display-area');
+    const notificationSound = document.getElementById('notification-sound');
+    
+    // --- Elementos de Tela ---
+    const waitingScreen = document.getElementById('waiting-screen');
+    const messageScreen = document.getElementById('message-screen');
+    const displayWrapper = document.querySelector('.display-wrapper');
     const queueCounterDiv = document.getElementById('queue-counter');
     const queueCountSpan = document.getElementById('queue-count');
-    const notificationSound = document.getElementById('notification-sound');
 
-    let currentTimeoutId = null;
+    // --- Elementos de Conteúdo ---
+    const incentivePhraseEl = document.getElementById('incentive-phrase');
+    const totalCountEl = document.getElementById('total-count');
+
+    // --- Elementos dos Modos (Default, Carousel, Ticker) ---
+    const modeContainers = document.querySelectorAll('.mode-container');
+    const defaultRecipientSpan = document.getElementById('display-recipient');
+    const defaultMessageSpan = document.getElementById('display-message');
+    const defaultSenderSpan = document.getElementById('display-sender');
+    const carouselSlide = document.getElementById('carousel-slide');
+    const carouselPrevBtn = document.getElementById('carousel-prev');
+    const carouselNextBtn = document.getElementById('carousel-next');
+    const tickerContent = document.getElementById('ticker-content');
+
+    // --- Estado do Display ---
+    let currentMode = 'default';
+    let displayedHistory = [];
+    let carouselIndex = -1;
+    let carouselTimeout;
+    let currentMessageTimeout;
     let messageStartTime = null;
-    const MIN_DISPLAY_TIME = 20000; // Alterado para 20 segundos
-
-    // --- Nova Lógica de Voz ---
+    const MIN_DISPLAY_TIME = 20000;
     let ptBrVoices = [];
+    let totalMessages = 0;
 
-    const loadAndFilterVoices = () => {
-        ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR');
-        if (ptBrVoices.length > 0) {
-            console.log('Vozes em Português (BR) carregadas:', ptBrVoices.map(v => v.name));
-        } else {
-            console.warn('Nenhuma voz em Português (BR) foi encontrada no sistema.');
-        }
-    };
+    const incentivePhrases = [
+        "Sua mensagem pode ser a próxima!",
+        "Quem será o próximo homenageado?",
+        "Envie uma mensagem para aquele colega especial!",
+        "Não seja tímido, o correio é anônimo!",
+        "Aproveite a festa e espalhe o carinho!"
+    ];
+    let phraseInterval;
 
-    // A lista de vozes é carregada de forma assíncrona.
-    window.speechSynthesis.onvoiceschanged = loadAndFilterVoices;
-    loadAndFilterVoices(); // Tenta carregar imediatamente caso já estejam disponíveis.
-    // --- Fim da Nova Lógica de Voz ---
-
+    // --- Inicialização ---
     const initializeDisplay = () => {
-        console.log('Iniciando o telão e ativando o áudio...');
-
         startOverlay.classList.add('hidden');
-        displayContainer.classList.remove('hidden');
+        mainDisplayArea.classList.remove('hidden');
+        setScreenState('waiting'); // Começa na tela de espera
 
-        // Tenta "acordar" a API de áudio. É uma prática comum para contornar o bloqueio de autoplay.
+        // Acorda a API de áudio
         if (window.speechSynthesis.getVoices().length === 0) {
-            window.speechSynthesis.onvoiceschanged = () => {
-                console.log('Vozes carregadas após interação.');
-            };
-            // Tenta falar algo vazio para forçar o carregamento
+            window.speechSynthesis.onvoiceschanged = () => {};
             const utterance = new SpeechSynthesisUtterance('');
             window.speechSynthesis.speak(utterance);
         }
-
-        // Garante que o som pode ser tocado fazendo um play "silencioso"
         notificationSound.play().then(() => {
             notificationSound.pause();
             notificationSound.currentTime = 0;
-        }).catch(error => {
-            console.log("A reprodução automática de áudio pode estar bloqueada.");
-        });
+        }).catch(e => console.log("Áudio bloqueado."));
         generateQRCode();
     };
 
     startButton.addEventListener('click', initializeDisplay, { once: true });
 
-    const generateQRCode = () => {
-        const url = window.location.origin;
-        const options = { width: 300, margin: 2 };
-        
-        // Desenha no canvas principal
-        QRCode.toCanvas(qrCanvas, url, options, (error) => {
-            if (error) console.error('Erro ao gerar QR Code principal:', error);
-            else console.log('QR Code principal gerado.');
-        });
-        
-        // Desenha no canvas pequeno
-        options.width = 120;
-        QRCode.toCanvas(smallQrCanvas, url, options, (error) => {
-            if (error) console.error('Erro ao gerar QR Code pequeno:', error);
-            else console.log('QR Code pequeno gerado.');
-        });
+    // --- Gerenciamento de Estado da Tela ---
+    const setScreenState = (state) => {
+        if (state === 'waiting') {
+            waitingScreen.classList.remove('hidden');
+            messageScreen.classList.add('hidden');
+            startIncentiveCycle();
+        } else { // 'message'
+            waitingScreen.classList.add('hidden');
+            messageScreen.classList.remove('hidden');
+            stopIncentiveCycle();
+        }
     };
 
-    const speakMessage = (text) => {
-        // Se a síntese estiver pausada por algum motivo, resume.
-        if (window.speechSynthesis.paused) {
-            window.speechSynthesis.resume();
-        }
-
+    // --- Ciclo de Frases de Incentivo ---
+    const startIncentiveCycle = () => {
+        stopIncentiveCycle(); // Garante que não haja múltiplos intervalos
+        let i = 0;
+        phraseInterval = setInterval(() => {
+            i = (i + 1) % incentivePhrases.length;
+            incentivePhraseEl.textContent = incentivePhrases[i];
+        }, 8000);
+    };
+    const stopIncentiveCycle = () => clearInterval(phraseInterval);
+    
+    // --- Lógica de Voz (sem alterações) ---
+    const loadAndFilterVoices = () => ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR');
+    window.speechSynthesis.onvoiceschanged = loadAndFilterVoices;
+    loadAndFilterVoices();
+    const speakMessage = (text, forceVoice) => {
+        if (window.speechSynthesis.paused) window.speechSynthesis.resume();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'pt-BR';
-        
-        // Seleciona uma voz aleatória da nossa lista de vozes pt-BR
         if (ptBrVoices.length > 0) {
-            const randomVoice = ptBrVoices[Math.floor(Math.random() * ptBrVoices.length)];
-            utterance.voice = randomVoice;
-            console.log(`Voz selecionada: ${randomVoice.name}`);
-        } else {
-            console.warn('Nenhuma voz pt-BR disponível, usando a padrão do navegador.');
+            utterance.voice = forceVoice || ptBrVoices[Math.floor(Math.random() * ptBrVoices.length)];
         }
-
-        // Adiciona variações divertidas de tom e velocidade
-        utterance.pitch = 0.8 + Math.random() * 0.4; // Varia entre 0.8 e 1.2
-        utterance.rate = 0.9 + Math.random() * 0.3;  // Varia entre 0.9 e 1.2
-        
+        utterance.pitch = 0.8 + Math.random() * 0.4;
+        utterance.rate = 0.9 + Math.random() * 0.3;
         window.speechSynthesis.speak(utterance);
     };
 
-    const adjustFontSize = (messageText) => {
-        // Verifica a largura da tela para definir os tamanhos base e mínimo
-        const isMobile = window.innerWidth <= 768;
+    // --- Funções de Renderização dos Modos ---
+    const renderDefault = (msg) => {
+        defaultRecipientSpan.textContent = msg.recipient;
+        defaultMessageSpan.textContent = msg.message;
+        defaultSenderSpan.textContent = msg.sender;
+        adjustFontSize(defaultMessageSpan, msg.message);
+    };
 
-        const baseSize = isMobile ? 1.2 : 4.5;      // Tamanho base em rem (mobile vs desktop)
-        const minSize = isMobile ? 0.9 : 1.8;       // Tamanho mínimo em rem
-        const maxLength = isMobile ? 50 : 60;       // Caracteres para começar a reduzir
-        const reductionFactor = isMobile ? 0.02 : 0.04; // Fator de redução
+    const renderCarousel = (index) => {
+        if (index < 0 || index >= displayedHistory.length) return;
+        carouselIndex = index;
+        const msg = displayedHistory[index];
+        carouselSlide.innerHTML = `
+            <div class="message-card">
+                <p class="recipient">Para: <span>${msg.recipient}</span></p>
+                <p class="message-text">"<span>${msg.message}</span>"</p>
+                <p class="sender">De: <span>${msg.sender}</span></p>
+                <button class="carousel-speak-btn" aria-label="Ler mensagem"><i class="fas fa-volume-up"></i></button>
+            </div>
+        `;
+        adjustFontSize(carouselSlide.querySelector('.message-text > span'), msg.message);
+        carouselPrevBtn.style.visibility = (index > 0) ? 'visible' : 'hidden';
+        carouselNextBtn.style.visibility = (index < displayedHistory.length - 1) ? 'visible' : 'hidden';
+    };
+
+    const renderTicker = (msg) => {
+        tickerContent.innerHTML = `Para: <strong>${msg.recipient}</strong> — "${msg.message}" — De: <strong>${msg.sender}</strong>`;
+        const speedFactor = 0.08; // segundos por caracter
+        const duration = tickerContent.textContent.length * speedFactor;
+        tickerContent.style.animationDuration = `${Math.max(10, duration)}s`;
+        tickerContent.classList.add('animate');
+    };
+
+    // --- Controle de Exibição ---
+    const switchMode = (newMode) => {
+        currentMode = newMode;
+        modeContainers.forEach(c => c.classList.add('hidden'));
+        const activeContainer = document.getElementById(`${newMode}-mode-container`);
+        if (activeContainer) activeContainer.classList.remove('hidden');
+        console.log(`Modo alterado para: ${newMode}`);
+    };
+
+    const startDisplay = (msg, duration) => {
+        setScreenState('message');
+        displayWrapper.classList.remove('hidden');
+
+        switch (currentMode) {
+            case 'default':
+                renderDefault(msg);
+                break;
+            case 'carousel':
+                renderCarousel(displayedHistory.length - 1);
+                clearTimeout(carouselTimeout); // Para o timer de auto-avanço se uma nova msg chegar
+                break;
+            case 'ticker':
+                renderTicker(msg);
+                break;
+        }
+        const fullText = `Correio Elegante para ${msg.recipient}. A mensagem é: ${msg.message}. Enviado por: ${msg.sender}.`;
+        speakMessage(fullText);
+        messageStartTime = Date.now();
+        currentMessageTimeout = setTimeout(finishDisplay, duration);
+    };
+
+    const finishDisplay = () => {
+        displayWrapper.classList.add('hidden');
+        if (currentMode === 'ticker') tickerContent.classList.remove('animate');
         
-        let newSize = baseSize;
+        clearTimeout(currentMessageTimeout);
+        clearTimeout(carouselTimeout);
+        messageStartTime = null;
 
+        setScreenState('waiting'); // Volta para a tela de espera
+        
+        socket.emit('messageDisplayed');
+    };
+
+    // --- Listeners de Socket ---
+    socket.on('initialState', state => {
+        switchMode(state.displayMode);
+        displayedHistory = state.displayedHistory || [];
+        totalMessages = state.totalMessages || 0;
+        totalCountEl.textContent = totalMessages;
+    });
+    socket.on('modeUpdate', newMode => switchMode(newMode));
+    socket.on('displayMessage', data => {
+        totalMessages = data.totalMessages;
+        totalCountEl.textContent = totalMessages;
+        displayedHistory = data.history;
+        startDisplay(data.message, data.message.duration);
+    });
+    socket.on('queueUpdate', (data) => {
+        totalMessages = data.totalMessages;
+        totalCountEl.textContent = totalMessages;
+        queueCountSpan.textContent = data.count;
+        queueCounterDiv.classList.toggle('hidden', data.count === 0);
+        if (data.new && data.count > 0) {
+            notificationSound.play();
+            queueCounterDiv.classList.add('new-message');
+            setTimeout(() => queueCounterDiv.classList.remove('new-message'), 300);
+        }
+    });
+
+    // --- Listeners de Eventos ---
+    carouselPrevBtn.addEventListener('click', () => {
+        clearTimeout(carouselTimeout);
+        if (carouselIndex > 0) renderCarousel(carouselIndex - 1);
+    });
+    carouselNextBtn.addEventListener('click', () => {
+        clearTimeout(carouselTimeout);
+        if (carouselIndex < displayedHistory.length - 1) renderCarousel(carouselIndex + 1);
+    });
+    carouselSlide.addEventListener('click', (event) => {
+        const speakBtn = event.target.closest('.carousel-speak-btn');
+        if (speakBtn) {
+            clearTimeout(carouselTimeout);
+            const msg = displayedHistory[carouselIndex];
+            const text = `Para ${msg.recipient}, ${msg.message}, de ${msg.sender}.`;
+            speakMessage(text);
+            
+            // Feedback visual no botão
+            speakBtn.classList.add('speaking');
+            setTimeout(() => speakBtn.classList.remove('speaking'), 1000);
+        }
+    });
+
+    // --- Funções Auxiliares (QR Code, Font Size) ---
+    const generateQRCode = () => {
+        const url = window.location.origin;
+        // Desenha o QR Code grande (na tela de espera)
+        QRCode.toCanvas(document.getElementById('qr-code'), url, { width: 300, margin: 2 }, (e) => { if(e) console.error(e); });
+        // Desenha o QR Code pequeno (na barra lateral)
+        QRCode.toCanvas(document.getElementById('qr-code-small'), url, { width: 180, margin: 1 }, (e) => { if(e) console.error(e); });
+    };
+    const adjustFontSize = (element, messageText) => {
+        const isMobile = window.innerWidth <= 1024; // Ajuste o breakpoint se necessário
+        const baseSize = isMobile ? 1.2 : 4.5;
+        const minSize = isMobile ? 0.9 : 1.8;
+        const maxLength = isMobile ? 50 : 60;
+        const reductionFactor = isMobile ? 0.02 : 0.04;
+        let newSize = baseSize;
         if (messageText.length > maxLength) {
             newSize = baseSize - ((messageText.length - maxLength) * reductionFactor);
         }
-        
-        // Aplica o tamanho de fonte calculado, respeitando o mínimo
-        messageSpan.style.fontSize = `${Math.max(minSize, newSize)}rem`;
+        element.style.fontSize = `${Math.max(minSize, newSize)}rem`;
     };
-    
-    const finishDisplay = () => {
-        messageDisplayDiv.classList.add('hidden');
-        smallQrContainer.classList.add('hidden');
-        qrCodeDiv.classList.remove('hidden');
-        socket.emit('messageDisplayed');
-        console.log('Exibição da mensagem concluída.');
-        
-        // Limpa o estado
-        clearTimeout(currentTimeoutId);
-        currentTimeoutId = null;
-        messageStartTime = null;
-    };
-
-    socket.on('displayMessage', (msg) => {
-        console.log('Recebendo mensagem para exibir:', msg);
-
-        recipientSpan.textContent = msg.recipient;
-        messageSpan.textContent = msg.message;
-        senderSpan.textContent = msg.sender;
-        
-        adjustFontSize(msg.message);
-        
-        qrCodeDiv.classList.add('hidden');
-        messageDisplayDiv.classList.remove('hidden');
-        smallQrContainer.classList.remove('hidden');
-
-        const fullText = `Correio Elegante para ${msg.recipient}. A mensagem é: ${msg.message}. Enviado por: ${msg.sender}.`;
-        speakMessage(fullText);
-
-        const displayDuration = msg.duration || 10000;
-        messageStartTime = Date.now();
-        currentTimeoutId = setTimeout(finishDisplay, displayDuration);
-    });
-
-    socket.on('interruptDisplay', () => {
-        if (!currentTimeoutId) return; // Nenhuma mensagem na tela, não faz nada
-
-        const elapsedTime = Date.now() - messageStartTime;
-
-        if (elapsedTime >= MIN_DISPLAY_TIME) {
-            // Se já passou do tempo mínimo, encerra em 1 segundo
-            clearTimeout(currentTimeoutId);
-            currentTimeoutId = setTimeout(finishDisplay, 1000);
-            console.log('Interrompendo: Já passou do tempo mínimo.');
-        } else {
-            // Se ainda não deu o tempo mínimo, reprograma para encerrar exatamente no tempo mínimo
-            const remainingTime = MIN_DISPLAY_TIME - elapsedTime;
-            clearTimeout(currentTimeoutId);
-            currentTimeoutId = setTimeout(finishDisplay, remainingTime);
-            console.log(`Interrompendo: Reprogramado para terminar em ${remainingTime}ms.`);
-        }
-    });
-
-    socket.on('queueUpdate', (data) => {
-        const count = data.count;
-        queueCountSpan.textContent = count;
-
-        if (count > 0) {
-            queueCounterDiv.classList.remove('hidden');
-        } else {
-            queueCounterDiv.classList.add('hidden');
-        }
-
-        if (data.new && count > 0) {
-            notificationSound.currentTime = 0;
-            notificationSound.play();
-            // Animação visual no contador
-            queueCounterDiv.classList.add('new-message');
-            setTimeout(() => {
-                queueCounterDiv.classList.remove('new-message');
-            }, 300);
-        }
-    });
 }); 

@@ -336,6 +336,10 @@ button:hover {
     background: linear-gradient(45deg, #38b356, #2d9246);
 }
 
+.admin-actions .btn-save:hover {
+    background-color: #0056b3;
+}
+
 /* --- Media Queries para Responsividade --- */
 
 @media (max-width: 768px) {
@@ -423,4 +427,255 @@ button:hover {
         font-size: 0.9rem;
         padding: 0 10px;
     }
+} 
+
+/* --- NOVOS ESTILOS PARA MODOS DE EXIBIÇÃO --- */
+
+/* Wrapper principal para centralizar conteúdo */
+.display-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.mode-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Modo Carrossel */
+#carousel-mode-container {
+    justify-content: space-between;
+    padding: 0 2vw;
+    box-sizing: border-box;
+}
+
+#carousel-slide {
+    width: 80vw;
+    flex-shrink: 1;
+}
+
+#carousel-slide .message-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 5vh 5vw;
+    border: 3px solid var(--accent-color);
+    border-radius: 20px;
+    position: relative; /* Para o botão de som */
+}
+#carousel-slide .recipient, #carousel-slide .sender {
+    font-family: 'Lilita One', cursive;
+    font-size: 3.5rem;
+    color: var(--primary-color);
+}
+#carousel-slide .message-text {
+    font-size: 4.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 4vh 0;
+}
+
+.carousel-nav {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 4rem;
+    cursor: pointer;
+    transition: color 0.3s, transform 0.3s;
+    width: auto;
+    padding: 20px;
+}
+.carousel-nav:hover {
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.carousel-speak-btn {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    padding: 0;
+}
+.carousel-speak-btn:hover {
+    background: var(--primary-color);
+    color: #fff;
+}
+.carousel-speak-btn.speaking {
+    animation: pulse 1s infinite;
+}
+
+/* Modo Letreiro (Ticker) */
+#ticker-mode-container {
+    background-color: #111;
+    border-top: 5px solid var(--accent-color);
+    border-bottom: 5px solid var(--accent-color);
+}
+.ticker-wrap {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+}
+#ticker-content {
+    display: inline-block;
+    padding-left: 100%;
+    font-family: 'Lilita One', cursive;
+    font-size: 5rem;
+    color: #fff;
+}
+#ticker-content.animate {
+    animation: ticker-animation linear infinite;
+}
+@keyframes ticker-animation {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(93, 42, 142, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(93, 42, 142, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(93, 42, 142, 0); }
+}
+
+/* --- Layout Principal do Telão --- */
+body, html {
+    overflow: hidden; /* Evita barras de rolagem no telão */
+}
+#main-display-area {
+    width: 100vw;
+    height: 100vh;
+    /* Fundo temático de toalha de mesa quadriculada (sutil) */
+    background-image:
+        linear-gradient(rgba(93, 42, 142, 0.07) 1px, transparent 1px),
+        linear-gradient(to right, rgba(93, 42, 142, 0.07) 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-color: #F2EBF9;
+}
+
+/* --- MODO DE ESPERA --- */
+#waiting-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+}
+#waiting-screen #qr-code {
+    border: 5px solid var(--bg-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+#waiting-screen h2 {
+    font-family: 'Lilita One', cursive;
+    font-size: 3.5rem;
+    color: var(--primary-color);
+    text-shadow: 2px 2px #fff;
+}
+#total-messages-counter {
+    margin-top: 20px;
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+/* --- MODO DE MENSAGEM --- */
+#message-screen {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+#side-panel {
+    width: 280px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: center;
+}
+#side-logo {
+    max-width: 150px;
+}
+.side-title {
+    font-family: 'Lilita One', cursive;
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    line-height: 1;
+    margin: -40px 0; /* Puxa para cima para ocupar espaço */
+}
+.side-title p {
+    margin: 0;
+}
+#side-qr-code canvas {
+    border: 5px solid #f0f0f0;
+    border-radius: var(--border-radius);
+    max-width: 100%;
+    height: auto;
+}
+
+#content-panel {
+    flex-grow: 1;
+    height: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.display-wrapper {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Remove posicionamento antigo */
+#display-logo, #small-qr-container {
+    position: static;
+}
+
+/* Re-estiliza o contador de fila para o novo layout */
+#queue-counter {
+    position: absolute; /* Relativo ao #content-panel */
+    top: 50px;
+    right: 50px;
+    z-index: 1001;
+    background: var(--accent-color);
+    color: var(--primary-color);
+    font-family: 'Lilita One', cursive;
+    font-size: 1.8rem;
+    border: 3px solid var(--primary-color);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(93, 42, 142, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(93, 42, 142, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(93, 42, 142, 0); }
 } 

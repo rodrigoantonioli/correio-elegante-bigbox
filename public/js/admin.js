@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addMessageBtn = document.getElementById('addMessageBtn');
     const saveChangesBtn = document.getElementById('saveChangesBtn');
     const messageLogBody = document.querySelector('#messageLog tbody');
+    const displayModeRadios = document.querySelectorAll('input[name="displayMode"]');
 
     // Função para auto-ajustar a altura do textarea
     const autoGrow = (element) => {
@@ -73,6 +74,29 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('messageLog', renderLog);
     socket.emit('getMessages');
     socket.emit('getLog');
+
+    // --- Lógica do Modo de Exibição ---
+    socket.on('initialState', (state) => {
+        const currentMode = state.displayMode;
+        const radioToCheck = document.querySelector(`input[name="displayMode"][value="${currentMode}"]`);
+        if (radioToCheck) {
+            radioToCheck.checked = true;
+        }
+    });
+
+    socket.on('modeUpdate', (newMode) => {
+        const radioToCheck = document.querySelector(`input[name="displayMode"][value="${newMode}"]`);
+        if (radioToCheck) {
+            radioToCheck.checked = true;
+        }
+    });
+
+    displayModeRadios.forEach(radio => {
+        radio.addEventListener('change', (event) => {
+            socket.emit('setDisplayMode', event.target.value);
+        });
+    });
+    // --- Fim da Lógica ---
 
     // Adiciona um novo campo de mensagem
     addMessageBtn.addEventListener('click', () => {

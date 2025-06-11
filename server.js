@@ -29,6 +29,8 @@ let isDisplayBusy = false;
 let messageLog = [];
 let connectedClients = {}; // Para rastrear clientes
 let blockedIps = new Set(); // Para armazenar IPs bloqueados
+let displayedMessagesLog = []; // Histórico para o carrossel
+let currentDisplayMode = 'default'; // Modos: 'default', 'carousel', 'ticker'
 
 // Estrutura para Estatísticas
 const stats = {
@@ -171,8 +173,19 @@ const processQueue = () => {
         const nextMessage = messageQueue.shift();
         const messageToSend = { ...nextMessage, duration };
         
-        io.emit('displayMessage', messageToSend);
-        io.emit('queueUpdate', { count: messageQueue.length }); // Atualiza o contador para todos após remover
+        // Adiciona ao histórico de exibidas ANTES de enviar
+        displayedMessagesLog.push(messageToSend);
+        // Mantém o histórico com um tamanho razoável, ex: últimas 50 mensagens
+        if (displayedMessagesLog.length > 50) {
+            displayedMessagesLog.shift();
+        }
+
+        io.emit('displayMessage', { 
+            message: messageToSend, 
+            history: displayedMessagesLog,
+            totalMessages: messageLog.length
+        });
+        io.emit('queueUpdate', { count: messageQueue.length, totalMessages: messageLog.length }); // Atualiza o contador para todos após remover
     }
 };
 
@@ -241,6 +254,14 @@ io.on('connection', (socket) => {
         stats.peakConcurrentClients = currentClientCount;
     }
 
+    // Envia o modo de exibição atual para o cliente que acabou de se conectar
+    // Útil principalmente para admin e display
+    socket.emit('initialState', { 
+        displayMode: currentDisplayMode,
+        displayedHistory: displayedMessagesLog,
+        totalMessages: messageLog.length
+    });
+
     updateClientsAdmin();
     updateStatsAdmin();
 
@@ -296,7 +317,7 @@ io.on('connection', (socket) => {
         appendToLogFile(fullMessage);
         
         // Notifica que uma NOVA mensagem chegou e atualiza a contagem
-        io.emit('queueUpdate', { count: messageQueue.length, new: true });
+        io.emit('queueUpdate', { count: messageQueue.length, new: true, totalMessages: messageLog.length });
 
         // Se o telão estiver ocupado, comanda a interrupção para acelerar a fila
         if (isDisplayBusy) {
@@ -325,6 +346,16 @@ io.on('connection', (socket) => {
             io.emit('updateMessages', predefinedMessages); // Envia para todos os clientes
         } catch (error) {
             console.error('Erro ao salvar messages.json:', error);
+        }
+    });
+
+    // Novo evento para definir o modo de exibição
+    socket.on('setDisplayMode', (mode) => {
+        if (['default', 'carousel', 'ticker'].includes(mode)) {
+            currentDisplayMode = mode;
+            console.log(`Modo de exibição alterado para: ${mode}`);
+            // Envia a atualização para todos, incluindo os painéis de admin
+            io.emit('modeUpdate', currentDisplayMode);
         }
     });
 

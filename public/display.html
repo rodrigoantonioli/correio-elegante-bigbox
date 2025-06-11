@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telão - Correio Elegante</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
 </head>
 <body>
@@ -13,34 +14,72 @@
         <p>É necessário um clique para ativar o áudio no navegador.</p>
     </div>
 
-    <div class="display-container hidden">
-
-        <div id="message-display" class="hidden">
-            <div class="message-card">
-                <p class="recipient">Para: <span id="display-recipient"></span></p>
-                <p class="message-text">"<span id="display-message"></span>"</p>
-                <p class="sender">De: <span id="display-sender"></span></p>
+    <div id="main-display-area" class="hidden">
+        
+        <!-- MODO DE ESPERA (TELA CHEIA) -->
+        <div id="waiting-screen">
+            <h2 id="incentive-phrase">Sua mensagem pode ser a próxima!</h2>
+            <canvas id="qr-code"></canvas>
+            <p>Aponte a câmera do seu celular para enviar!</p>
+            <div id="total-messages-counter">
+                🎉 <span id="total-count">0</span> mensagens enviadas! 🎉
             </div>
         </div>
 
-        <div id="qr-code-display">
-            <h2>Envie seu Correio Elegante</h2>
-            <canvas id="qr-code"></canvas>
-            <p>Aponte a câmera do seu celular para o QR Code</p>
-        </div>
+        <!-- MODO DE MENSAGEM (COM BARRA LATERAL) -->
+        <div id="message-screen">
+            <!-- BARRA LATERAL -->
+            <div id="side-panel">
+                <img src="/images/logo.png" alt="BigBox Logo" id="side-logo">
+                <div class="side-title">
+                    <p>Correio</p>
+                    <p>Elegante</p>
+                </div>
+                <div id="side-qr-code">
+                    <canvas id="qr-code-small"></canvas>
+                    <p>Envie a sua também!</p>
+                </div>
+            </div>
 
+            <!-- ÁREA DE CONTEÚDO DINÂMICO -->
+            <div id="content-panel">
+                <div class="display-wrapper">
+                    <!-- MODO PADRÃO -->
+                    <div id="default-mode-container" class="mode-container hidden">
+                        <div id="message-display">
+                            <div class="message-card">
+                                <p class="recipient">Para: <span id="display-recipient"></span></p>
+                                <p class="message-text">"<span id="display-message"></span>"</p>
+                                <p class="sender">De: <span id="display-sender"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MODO CARROSSEL -->
+                    <div id="carousel-mode-container" class="mode-container hidden">
+                        <button id="carousel-prev" class="carousel-nav" aria-label="Mensagem Anterior"><i class="fas fa-chevron-left"></i></button>
+                        <div id="carousel-slide">
+                            <!-- O conteúdo da mensagem do carrossel será inserido aqui -->
+                        </div>
+                        <button id="carousel-next" class="carousel-nav" aria-label="Próxima Mensagem"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+
+                    <!-- MODO LETREIRO -->
+                    <div id="ticker-mode-container" class="mode-container hidden">
+                        <div class="ticker-wrap">
+                            <div id="ticker-content" class="ticker-item">
+                                <!-- O conteúdo do letreiro será inserido aqui -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
-    <div id="small-qr-container" class="hidden">
-        <canvas id="qr-code-small"></canvas>
-        <p>Envie a sua mensagem!</p>
-    </div>
-
     <div id="queue-counter" class="hidden">
         <p>🔔 <span id="queue-count">0</span></p>
     </div>
-
-    <img src="/images/logo.png" alt="BigBox Logo" id="display-logo">
 
     <audio id="notification-sound" src="/audio/notification.mp3" preload="auto"></audio>
 
