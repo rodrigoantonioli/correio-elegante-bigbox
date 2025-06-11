@@ -23,6 +23,23 @@ document.addEventListener('DOMContentLoaded', () => {
     let messageStartTime = null;
     const MIN_DISPLAY_TIME = 20000; // Alterado para 20 segundos
 
+    // --- Nova Lógica de Voz ---
+    let ptBrVoices = [];
+
+    const loadAndFilterVoices = () => {
+        ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR');
+        if (ptBrVoices.length > 0) {
+            console.log('Vozes em Português (BR) carregadas:', ptBrVoices.map(v => v.name));
+        } else {
+            console.warn('Nenhuma voz em Português (BR) foi encontrada no sistema.');
+        }
+    };
+
+    // A lista de vozes é carregada de forma assíncrona.
+    window.speechSynthesis.onvoiceschanged = loadAndFilterVoices;
+    loadAndFilterVoices(); // Tenta carregar imediatamente caso já estejam disponíveis.
+    // --- Fim da Nova Lógica de Voz ---
+
     const initializeDisplay = () => {
         console.log('Iniciando o telão e ativando o áudio...');
 
@@ -75,16 +92,21 @@ document.addEventListener('DOMContentLoaded', () => {
             window.speechSynthesis.resume();
         }
 
-        const voices = window.speechSynthesis.getVoices();
-        const ptBrVoice = voices.find(voice => voice.lang === 'pt-BR');
-
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'pt-BR';
-        if (ptBrVoice) {
-            utterance.voice = ptBrVoice;
+        
+        // Seleciona uma voz aleatória da nossa lista de vozes pt-BR
+        if (ptBrVoices.length > 0) {
+            const randomVoice = ptBrVoices[Math.floor(Math.random() * ptBrVoices.length)];
+            utterance.voice = randomVoice;
+            console.log(`Voz selecionada: ${randomVoice.name}`);
+        } else {
+            console.warn('Nenhuma voz pt-BR disponível, usando a padrão do navegador.');
         }
-        utterance.rate = 0.9;
-        utterance.pitch = 1;
+
+        // Adiciona variações divertidas de tom e velocidade
+        utterance.pitch = 0.8 + Math.random() * 0.4; // Varia entre 0.8 e 1.2
+        utterance.rate = 0.9 + Math.random() * 0.3;  // Varia entre 0.9 e 1.2
         
         window.speechSynthesis.speak(utterance);
     };
