@@ -55,6 +55,12 @@ app.get('/admin', checkAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'private', 'admin.html'));
 });
 
+// Rota de Logout
+app.get('/logout', (req, res) => {
+    req.session = null; // Destrói a sessão
+    res.redirect('/login.html');
+});
+
 // Função para salvar uma mensagem no arquivo de log
 const appendToLogFile = (message) => {
     const timestamp = new Date(message.timestamp).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
@@ -115,13 +121,18 @@ io.on('connection', (socket) => {
     // Envia as mensagens prontas para o cliente que acabou de conectar
     socket.emit('updateMessages', predefinedMessages);
 
-    // Envia o log de mensagens para o admin
-    socket.emit('messageLog', messageLog);
+    // O envio automático de log na conexão foi removido para maior segurança e eficiência.
+    // O cliente de admin agora solicitará o log.
+
+    socket.on('getLog', () => {
+        socket.emit('messageLog', messageLog);
+    });
 
     socket.on('newMessage', (msg) => {
         console.log('Nova mensagem recebida:', msg);
         const fullMessage = { ...msg, id: Date.now(), timestamp: new Date() };
         messageQueue.push(fullMessage);
+        messageLog.push(fullMessage);
         appendToLogFile(fullMessage);
         
         // Notifica que uma NOVA mensagem chegou e atualiza a contagem

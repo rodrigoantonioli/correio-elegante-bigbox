@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('updateMessages', renderMessages);
     socket.on('messageLog', renderLog);
     socket.emit('getMessages');
+    socket.emit('getLog');
 
     // Adiciona um novo campo de mensagem
     addMessageBtn.addEventListener('click', () => {
