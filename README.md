@@ -1,74 +1,86 @@
-# Correio Elegante em Tempo Real
+# 💌 Correio Elegante em Tempo Real para Festas
 
-Este é um projeto de um sistema de Correio Elegante para festas e eventos. Os convidados podem escanear um QR Code, acessar uma página para enviar uma mensagem pré-definida e ela aparecerá em um telão em tempo real, com leitura em voz alta.
+Projeto completo de um sistema de Correio Elegante para festas e eventos, com envio de mensagens por celular, exibição em telão com voz, e painel de administração seguro. Ideal para festas juninas, casamentos e confraternizações.
 
-## Funcionalidades
+![Demonstração do Layout](https://i.imgur.com/L8u0a8V.png)
 
-- **Página de Envio:** Formulário para o convidado preencher o destinatário, escolher uma mensagem e assinar.
-- **Telão:** Exibe as mensagens recebidas em fila, uma por vez.
-- **Leitura em Voz Alta:** Utiliza a Web Speech API do navegador para ler a mensagem no telão.
-- **Fila de Mensagens:** As mensagens são enfileiradas no servidor e exibidas na ordem de chegada.
-- **QR Code Dinâmico:** O telão exibe um QR Code que leva diretamente para a página de envio.
-- **Painel de Administração:** Uma página para visualizar o log de mensagens enviadas e para configurar (adicionar, editar, remover) a lista de mensagens prontas.
-- **Comunicação em Tempo Real:** Utiliza `Socket.IO` para garantir que as mensagens apareçam instantaneamente.
+## ✨ Funcionalidades Principais
 
-## Tecnologias Utilizadas
+- **Envio Anônimo:** Convidados enviam mensagens de seus celulares, com "Admirador Secreto" como padrão.
+- **Telão Inteligente:** Exibe mensagens em fila, com leitura em voz alta (Web Speech API).
+  - O tempo de exibição é ajustado automaticamente (60s para a última mensagem, 20s se houver fila).
+  - A fila é interrompida de forma inteligente para exibir novas mensagens mais rápido.
+- **Notificações em Tempo Real:** O telão exibe um contador de mensagens na fila e toca um som de notificação a cada novo envio.
+- **Painel de Administração Seguro:**
+  - Protegido por senha.
+  - Permite configurar a lista de mensagens prontas.
+  - Exibe um log em tempo real das mensagens enviadas na festa.
+- **Auditoria Completa:** Uma página de histórico separada (`/history`) registra todas as mensagens enviadas, incluindo o endereço IP do remetente.
+- **Layout Personalizado:** Design temático com o logo da empresa/evento.
+
+## 🚀 Tecnologias Utilizadas
 
 - **Backend:** Node.js, Express.js
 - **Comunicação Real-time:** Socket.IO
+- **Autenticação:** `cookie-session` para sessões de administrador.
 - **Frontend:** HTML5, CSS3, JavaScript (puro)
 - **Geração de QR Code:** `qrcode` (via CDN)
-- **Síntese de Voz:** Web Speech API (nativa do navegador)
+- **Versionamento:** Git & GitHub
 
-## Estrutura do Projeto
+---
 
-```
-/
-├── public/
-│   ├── index.html         # Página para enviar mensagens
-│   ├── display.html       # Página para o telão
-│   ├── admin.html         # Página de administração
-│   └── css/
-│       └── style.css
-│   └── js/
-│       ├── main.js        # Lógica do formulário de envio
-│       ├── display.js     # Lógica do telão
-│       └── admin.js       # Lógica do painel admin
-├── server.js              # Servidor (Express + Socket.IO)
-├── messages.json          # Arquivo com as mensagens prontas
-├── package.json
-└── README.md
-```
-
-## Como Rodar o Projeto
+## 🏁 Como Rodar o Projeto Localmente
 
 ### Pré-requisitos
-
-- [Node.js](https://nodejs.org/) (versão 14 ou superior)
-- `npm` (geralmente instalado com o Node.js)
+- [Node.js](https://nodejs.org/) (versão 16 ou superior)
+- `npm` (instalado com o Node.js)
 
 ### Passos
+1. **Clone o repositório:**
+   ```bash
+   git clone https://github.com/rodrigoantonioli/correio-elegante-bigbox.git
+   cd correio-elegante-bigbox
+   ```
+2. **Instale as dependências:**
+   ```bash
+   npm install
+   ```
+3. **Inicie o servidor:**
+   ```bash
+   npm start
+   ```
+4. **Acesse as páginas no seu navegador:**
+   - **Envio de Mensagens:** `http://localhost:3000`
+   - **Telão:** `http://localhost:3000/display`
+   - **Administração:** `http://localhost:3000/admin` (será redirecionado para o login)
 
-1.  **Clone o repositório ou baixe os arquivos para uma pasta no seu computador.**
+---
 
-2.  **Abra o terminal na pasta do projeto e instale as dependências:**
-    ```bash
-    npm install
-    ```
+## ☁️ Como Publicar na Internet (Deploy no Render)
 
-3.  **Inicie o servidor:**
-    ```bash
-    npm start
-    ```
+Para que todos na festa possam acessar, o ideal é publicar o projeto na internet. O serviço gratuito do Render é perfeito para isso.
 
-4.  **Acesse as páginas no seu navegador:**
-    -   **Para enviar uma mensagem:** [http://localhost:3000](http://localhost:3000)
-    -   **Para ver o telão:** [http://localhost:3000/display.html](http://localhost:3000/display.html)
-    -   **Para administrar:** [http://localhost:3000/admin.html](http://localhost:3000/admin.html)
+1. **Envie o projeto para o GitHub:** Siga os passos de versionamento com `git`.
 
-### Como usar na festa
+2. **Crie uma conta no [Render](https://render.com):** Use sua conta do GitHub para facilitar.
 
-1.  Conecte um computador à internet e ao telão/projetor da festa.
-2.  Rode o projeto neste computador.
-3.  Abra um navegador no modo de tela cheia e acesse a página do telão (`http://IP_DO_COMPUTADOR:3000/display.html`).
-4.  O telão mostrará o QR Code. Os convidados podem escaneá-lo com seus celulares para acessar a página de envio e começar a diversão! 
+3. **Crie um "New Web Service":**
+   - Conecte seu repositório do GitHub.
+   - Configure da seguinte forma:
+     - **Name:** `correio-elegante-bigbox` (ou o nome que preferir).
+     - **Build Command:** `npm install`
+     - **Start Command:** `npm start`
+     - **Instance Type:** `Free`
+
+4. **Configure as Variáveis de Ambiente (MUITO IMPORTANTE):**
+   - Na seção "Environment", adicione as seguintes variáveis:
+     - **`ADMIN_PASSWORD`**: Defina a senha que você desejar para a área de admin.
+     - **`SESSION_SECRET`**: Crie uma frase longa e aleatória para a segurança da sessão.
+
+5. **Clique em "Create Web Service".** Após alguns minutos, seu projeto estará no ar em um link como `https://correio-elegante-bigbox.onrender.com`.
+
+## 🎉 Como Usar na Festa
+
+1. **Acesse o link do telão no projetor:** `https://SEU_LINK.onrender.com/display`
+2. **Coloque em tela cheia (F11)** e clique em "Iniciar Telão".
+3. O QR Code que aparecerá na tela já estará apontando para o seu site. Basta os convidados escanearem para começar a enviar as mensagens! 

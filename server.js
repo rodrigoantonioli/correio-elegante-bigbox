@@ -55,6 +55,11 @@ app.get('/admin', checkAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'private', 'admin.html'));
 });
 
+// Nova rota para a página de display para ter uma URL mais limpa
+app.get('/display', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'display.html'));
+});
+
 // Nova rota para a página de histórico
 app.get('/history', checkAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'private', 'history.html'));
@@ -197,7 +202,7 @@ io.on('connection', (socket) => {
 
 server.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
-    console.log(`Acesse http://localhost:${PORT} para enviar uma mensagem.`);
-    console.log(`Acesse http://localhost:${PORT}/display.html para o telão.`);
-    console.log(`Acesse http://localhost:${PORT}/admin.html para administrar.`);
+    console.log(`- Envio de Mensagens: http://localhost:${PORT}`);
+    console.log(`- Telão: http://localhost:${PORT}/display`);
+    console.log(`- Administração: http://localhost:${PORT}/admin`);
 }); 
