@@ -11,11 +11,12 @@ const io = socketIo(server);
 
 const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'bigbox';
+const SESSION_SECRET = process.env.SESSION_SECRET || 'mude-esta-chave-secreta-depois';
 
 // Configuração da Sessão
 app.use(cookieSession({
     name: 'session',
-    keys: ['mude-esta-chave-secreta-depois'], // Mude para uma chave aleatória e segura
+    keys: [SESSION_SECRET],
     maxAge: 24 * 60 * 60 * 1000 // 24 horas
 }));
 
