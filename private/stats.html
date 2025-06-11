@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estatísticas - Correio Elegante</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .nav-links { text-align: center; margin-bottom: 2rem; }
+        .nav-links a { margin: 0 15px; color: #581c87; text-decoration: none; font-weight: bold; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .stat-card {
+            background-color: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+        }
+        .stat-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: #581c87;
+            font-size: 1.1rem;
+        }
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .stat-card .small-value {
+             font-size: 1rem;
+             font-weight: normal;
+             color: #666;
+             line-height: 1.4;
+        }
+        .chart-card {
+            grid-column: 1 / -1; /* Ocupa a largura toda */
+        }
+        #page-access-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #page-access-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+        }
+        #page-access-list li .page-name {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-links">
+            <a href="/admin">Gerenciar Mensagens</a>
+            <a href="/history">Histórico</a>
+            <a href="/clients">Monitor de Clientes</a>
+            <a href="/stats">Estatísticas</a>
+            <a href="/logout">Sair</a>
+        </div>
+        <h1><img src="/img/logo-bigbox.png" alt="Logo BigBox" style="height: 50px; vertical-align: middle;"> Estatísticas</h1>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Pico de Clientes</h3>
+                <span id="peak-clients" class="value">0</span>
+            </div>
+            <div class="stat-card">
+                <h3>Clientes Atuais</h3>
+                <span id="current-clients" class="value">0</span>
+            </div>
+            <div class="stat-card">
+                <h3>Mensagem Mais Popular</h3>
+                <span id="popular-message" class="small-value">Nenhuma mensagem enviada ainda.</span>
+            </div>
+            <div class="stat-card chart-card">
+                <h3>Clientes Conectados (última hora)</h3>
+                <canvas id="clients-chart"></canvas>
+            </div>
+            <div class="stat-card chart-card">
+                <h3>Total de Acessos por Página</h3>
+                <ul id="page-access-list">
+                    <!-- Conteúdo gerado via JS -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/stats.js"></script>
+</body>
+</html> 

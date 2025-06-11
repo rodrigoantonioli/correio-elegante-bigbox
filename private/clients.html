@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Clientes - Correio Elegante</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #581c87;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .block-btn {
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .block-btn:hover {
+            background-color: #b91c1c;
+        }
+        .unblock-btn {
+            background-color: #16a34a;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .unblock-btn:hover {
+            background-color: #15803d;
+        }
+        .nav-links {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .nav-links a {
+            margin: 0 15px;
+            color: #581c87;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-links">
+            <a href="/admin">Gerenciar Mensagens</a>
+            <a href="/history">Histórico</a>
+            <a href="/clients">Monitor de Clientes</a>
+            <a href="/stats">Estatísticas</a>
+            <a href="/logout">Sair</a>
+        </div>
+        <h1><img src="/img/logo-bigbox.png" alt="Logo BigBox" style="height: 50px; vertical-align: middle;"> Monitor de Clientes</h1>
+        
+        <h2>Clientes Conectados</h2>
+        <table id="clients-table">
+            <thead>
+                <tr>
+                    <th>Endereço IP</th>
+                    <th>Páginas Ativas</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Linhas serão inseridas dinamicamente -->
+            </tbody>
+        </table>
+
+        <h2 style="margin-top: 2rem;">IPs Bloqueados</h2>
+        <table id="blocked-ips-table">
+            <thead>
+                <tr>
+                    <th>Endereço IP</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Linhas serão inseridas dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/clients.js"></script>
+</body>
+</html> 

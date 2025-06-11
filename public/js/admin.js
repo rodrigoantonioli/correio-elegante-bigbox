@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
 
+    // Registra o cliente na página de admin
+    socket.emit('register', '/admin');
+
     const messagesListContainer = document.getElementById('messages-list-container');
     const addMessageBtn = document.getElementById('addMessageBtn');
     const saveChangesBtn = document.getElementById('saveChangesBtn');

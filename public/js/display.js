@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
 
+    // Registra o cliente na página de display
+    socket.emit('register', '/display');
+
     const startOverlay = document.getElementById('start-overlay');
     const startButton = document.getElementById('startButton');
     const displayContainer = document.querySelector('.display-container');

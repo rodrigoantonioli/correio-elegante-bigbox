@@ -27,6 +27,16 @@ app.use(express.urlencoded({ extended: true })); // Para parsear o formulário d
 let messageQueue = [];
 let isDisplayBusy = false;
 let messageLog = [];
+let connectedClients = {}; // Para rastrear clientes
+let blockedIps = new Set(); // Para armazenar IPs bloqueados
+
+// Estrutura para Estatísticas
+const stats = {
+    pageAccessCounts: {},
+    predefinedMessageCounts: {},
+    peakConcurrentClients: 0,
+    clientsOverTime: [] // Formato: { time: Date, count: Number }
+};
 
 const logFilePath = path.join(__dirname, 'message_history.log');
 const messagesFilePath = path.join(__dirname, 'messages.json');
@@ -38,6 +48,29 @@ const checkAuth = (req, res, next) => {
     }
     res.redirect('/login.html');
 };
+
+// Função para normalizar o endereço IP
+const normalizeIp = (ip) => {
+    if (ip === '::1' || ip === '::ffff:127.0.0.1') {
+        return '127.0.0.1';
+    }
+    return ip;
+};
+
+// Middleware para verificar IPs bloqueados (para rotas HTTP)
+const checkBlockedHttp = (req, res, next) => {
+    const forwardedFor = req.headers['x-forwarded-for'];
+    let ip = forwardedFor ? forwardedFor.split(',')[0].trim() : req.socket.remoteAddress;
+    ip = normalizeIp(ip);
+    
+    if (blockedIps.has(ip)) {
+        return res.status(403).send('Acesso negado.');
+    }
+    next();
+};
+
+// Aplicar o middleware de bloqueio a todas as rotas
+app.use(checkBlockedHttp);
 
 // Rota de Login
 app.post('/login', (req, res) => {
@@ -53,6 +86,16 @@ app.post('/login', (req, res) => {
 // A rota agora é '/admin' para não ser servida diretamente pelo 'express.static'
 app.get('/admin', checkAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'private', 'admin.html'));
+});
+
+// Nova rota para a página de monitoramento de clientes
+app.get('/clients', checkAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'private', 'clients.html'));
+});
+
+// Nova rota para a página de estatísticas
+app.get('/stats', checkAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'private', 'stats.html'));
 });
 
 // Nova rota para a página de display para ter uma URL mais limpa
@@ -133,8 +176,73 @@ const processQueue = () => {
     }
 };
 
+// Função para enviar a lista de clientes atualizada para o admin de clientes
+const updateClientsAdmin = () => {
+    const clientsByIp = {};
+    for (const client of Object.values(connectedClients)) {
+        if (!clientsByIp[client.ip]) {
+            clientsByIp[client.ip] = {
+                ip: client.ip,
+                pages: new Set() // Usar Set para evitar páginas duplicadas se o cliente reconectar rápido
+            };
+        }
+        clientsByIp[client.ip].pages.add(client.page);
+    }
+
+    const groupedClients = Object.values(clientsByIp).map(group => ({
+        ...group,
+        pages: Array.from(group.pages) // Converter Set para Array para enviar via JSON
+    }));
+
+    const payload = {
+        clients: groupedClients,
+        blocked: Array.from(blockedIps)
+    };
+    io.to('clients_admin_room').emit('clientsUpdate', payload);
+};
+
+// Função para enviar as estatísticas atualizadas
+const updateStatsAdmin = () => {
+    io.to('stats_admin_room').emit('statsUpdate', stats);
+};
+
+// Inicia a coleta de dados para o gráfico
+setInterval(() => {
+    stats.clientsOverTime.push({
+        time: new Date(),
+        count: Object.keys(connectedClients).length
+    });
+    // Mantém apenas os últimos 60 pontos (1 hora de dados)
+    if (stats.clientsOverTime.length > 60) {
+        stats.clientsOverTime.shift();
+    }
+    updateStatsAdmin();
+}, 60 * 1000); // A cada minuto
+
 io.on('connection', (socket) => {
-    console.log('Um cliente se conectou');
+    const forwardedFor = socket.handshake.headers['x-forwarded-for'];
+    let ip = forwardedFor ? forwardedFor.split(',')[0].trim() : socket.handshake.address;
+    ip = normalizeIp(ip);
+
+    // Middleware de bloqueio para Socket.IO
+    if (blockedIps.has(ip)) {
+        console.log(`Conexão recusada do IP bloqueado: ${ip}`);
+        return socket.disconnect();
+    }
+    
+    console.log(`Um cliente se conectou com o IP: ${ip}`);
+
+    // Registro inicial do cliente (será atualizado pelo evento 'register')
+    connectedClients[socket.id] = { id: socket.id, ip: ip, page: 'Conectando...' };
+    
+    // Atualiza o pico de clientes conectados
+    const currentClientCount = Object.keys(connectedClients).length;
+    if (currentClientCount > stats.peakConcurrentClients) {
+        stats.peakConcurrentClients = currentClientCount;
+    }
+
+    updateClientsAdmin();
+    updateStatsAdmin();
 
     // Envia o estado atual da fila para o cliente que acabou de conectar
     socket.emit('queueUpdate', { count: messageQueue.length });
@@ -149,14 +257,39 @@ io.on('connection', (socket) => {
         socket.emit('messageLog', messageLog);
     });
 
+    // Evento para o cliente se registrar e informar a página
+    socket.on('register', (page) => {
+        if (connectedClients[socket.id]) {
+            connectedClients[socket.id].page = page;
+        }
+
+        // Contabiliza acesso à página
+        stats.pageAccessCounts[page] = (stats.pageAccessCounts[page] || 0) + 1;
+
+        // Se for a página de monitoramento, coloca numa sala especial
+        if (page === 'clients_admin') {
+            socket.join('clients_admin_room');
+            // Envia a lista completa assim que ele se registra
+            updateClientsAdmin();
+        }
+        // Se for a página de estatísticas, coloca numa sala especial
+        if (page === 'stats_admin') {
+            socket.join('stats_admin_room');
+            updateStatsAdmin(); // Envia os dados atuais
+        }
+        updateClientsAdmin();
+        updateStatsAdmin();
+    });
+
     socket.on('newMessage', (msg) => {
         console.log('Nova mensagem recebida:', msg);
 
-        // Lógica correta para obter IP atrás de um proxy (como no Render)
-        // O cabeçalho 'x-forwarded-for' é adicionado por proxies e contém o IP original do cliente.
-        const forwardedFor = socket.handshake.headers['x-forwarded-for'];
-        const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : socket.handshake.address;
+        // Verifica se a mensagem é uma das predefinidas
+        if (predefinedMessages.includes(msg.message)) {
+            stats.predefinedMessageCounts[msg.message] = (stats.predefinedMessageCounts[msg.message] || 0) + 1;
+        }
 
+        // A obtenção de IP já foi feita na conexão
         const fullMessage = { ...msg, id: Date.now(), timestamp: new Date(), ip: ip };
         messageQueue.push(fullMessage);
         messageLog.push(fullMessage);
@@ -195,8 +328,40 @@ io.on('connection', (socket) => {
         }
     });
 
+    // Novo evento para bloquear um IP
+    socket.on('blockIp', (ipToBlock) => {
+        if (ipToBlock) {
+            blockedIps.add(ipToBlock);
+            console.log(`IP ${ipToBlock} bloqueado pelo administrador.`);
+
+            // Desconecta todos os sockets com este IP
+            for (const id in connectedClients) {
+                if (connectedClients[id].ip === ipToBlock) {
+                    const socketToDisconnect = io.sockets.sockets.get(id);
+                    if (socketToDisconnect) {
+                        socketToDisconnect.emit('blocked', 'Seu acesso foi revogado.');
+                        socketToDisconnect.disconnect(true);
+                    }
+                }
+            }
+            updateClientsAdmin(); // Atualiza a lista de bloqueados para os admins
+        }
+    });
+
+    // Novo evento para desbloquear um IP
+    socket.on('unblockIp', (ipToUnblock) => {
+        if (ipToUnblock) {
+            blockedIps.delete(ipToUnblock);
+            console.log(`IP ${ipToUnblock} desbloqueado pelo administrador.`);
+            updateClientsAdmin(); // Atualiza a lista de bloqueados para os admins
+        }
+    });
+
     socket.on('disconnect', () => {
-        console.log('Cliente desconectado');
+        console.log(`Cliente ${socket.id} (IP: ${ip}) desconectado.`);
+        delete connectedClients[socket.id];
+        updateClientsAdmin();
+        updateStatsAdmin();
     });
 });
 
@@ -206,4 +371,6 @@ server.listen(PORT, () => {
     console.log(`- Envio de Mensagens: ${baseUrl}`);
     console.log(`- Telão: ${baseUrl}/display`);
     console.log(`- Administração: ${baseUrl}/admin`);
+    console.log(`- Monitoramento: ${baseUrl}/clients`);
+    console.log(`- Estatísticas: ${baseUrl}/stats`);
 }); 

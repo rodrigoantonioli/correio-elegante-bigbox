@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Histórico de Mensagens - Admin</title>
+    <title>Histórico - Correio Elegante</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
         .history-container {
@@ -25,22 +25,29 @@
             align-items: center;
             width: 100%;
         }
+        .nav-links {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .nav-links a {
+            margin: 0 15px;
+            color: #581c87;
+            text-decoration: none;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <img src="/images/logo.png" alt="BigBox Logo" class="logo">
-            <h1>Histórico Completo</h1>
-            <p>Log de auditoria de todas as mensagens enviadas.</p>
-        </header>
-        <main>
-            <pre id="history-log" class="history-container">Carregando histórico...</pre>
-        </main>
-        <footer>
-            <a href="/admin">Painel Principal</a>
-            <a href="/logout">Sair (Logout)</a>
-        </footer>
+        <div class="nav-links">
+            <a href="/admin">Gerenciar Mensagens</a>
+            <a href="/history">Histórico</a>
+            <a href="/clients">Monitor de Clientes</a>
+            <a href="/stats">Estatísticas</a>
+            <a href="/logout">Sair</a>
+        </div>
+        <h1><img src="/img/logo-bigbox.png" alt="Logo BigBox" style="height: 50px; vertical-align: middle;"> Histórico de Mensagens</h1>
+        <pre id="history-log" class="history-container">Carregando histórico...</pre>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {

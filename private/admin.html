@@ -5,14 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Correio Elegante</title>
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .nav-links {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .nav-links a {
+            margin: 0 15px;
+            color: #581c87;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <img src="/images/logo.png" alt="BigBox Logo" class="logo">
-            <h1>Painel de Administração</h1>
-        </header>
-        <main>
+        <div class="nav-links">
+            <a href="/admin">Gerenciar Mensagens</a>
+            <a href="/history">Histórico</a>
+            <a href="/clients">Monitor de Clientes</a>
+            <a href="/stats">Estatísticas</a>
+            <a href="/logout">Sair</a>
+        </div>
+        <h1><img src="/img/logo-bigbox.png" alt="Logo BigBox" style="height: 50px; vertical-align: middle;"> Administração</h1>
+        
+        <h2>Mensagens na Fila</h2>
+        <div id="queue-status">
             <section class="admin-section">
                 <h2>Configurar Mensagens Prontas</h2>
                 <div id="messages-list-container">
@@ -46,11 +64,7 @@
                     </table>
                 </div>
             </section>
-        </main>
-        <footer>
-            <a href="/history">Ver Histórico Completo</a>
-            <a href="/logout">Sair (Logout)</a>
-        </footer>
+        </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/admin.js"></script>

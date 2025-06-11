@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
 
+    // Registra o cliente na página principal
+    socket.emit('register', '/');
+
     const form = document.getElementById('messageForm');
     const recipientInput = document.getElementById('recipient');
     const messageSelect = document.getElementById('message');
