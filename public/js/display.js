@@ -112,15 +112,22 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const adjustFontSize = (messageText) => {
-        const baseSize = 4.5; // Tamanho base em rem (igual ao do CSS)
-        const maxLength = 60; // Reduzir a partir de 60 caracteres
+        // Verifica a largura da tela para definir os tamanhos base e mínimo
+        const isMobile = window.innerWidth <= 768;
+
+        const baseSize = isMobile ? 1.2 : 4.5;      // Tamanho base em rem (mobile vs desktop)
+        const minSize = isMobile ? 0.9 : 1.8;       // Tamanho mínimo em rem
+        const maxLength = isMobile ? 50 : 60;       // Caracteres para começar a reduzir
+        const reductionFactor = isMobile ? 0.02 : 0.04; // Fator de redução
+        
         let newSize = baseSize;
 
         if (messageText.length > maxLength) {
-            newSize = baseSize - ((messageText.length - maxLength) * 0.04);
+            newSize = baseSize - ((messageText.length - maxLength) * reductionFactor);
         }
         
-        messageSpan.style.fontSize = `${Math.max(1.8, newSize)}rem`;
+        // Aplica o tamanho de fonte calculado, respeitando o mínimo
+        messageSpan.style.fontSize = `${Math.max(minSize, newSize)}rem`;
     };
     
     const finishDisplay = () => {
