@@ -201,8 +201,9 @@ io.on('connection', (socket) => {
 });
 
 server.listen(PORT, () => {
+    const baseUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
     console.log(`Servidor rodando na porta ${PORT}`);
-    console.log(`- Envio de Mensagens: http://localhost:${PORT}`);
-    console.log(`- Telão: http://localhost:${PORT}/display`);
-    console.log(`- Administração: http://localhost:${PORT}/admin`);
+    console.log(`- Envio de Mensagens: ${baseUrl}`);
+    console.log(`- Telão: ${baseUrl}/display`);
+    console.log(`- Administração: ${baseUrl}/admin`);
 }); 
