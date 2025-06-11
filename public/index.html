@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correio Elegante</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="/images/logo.png" alt="BigBox Logo" class="logo">
+            <h1>💌 Correio Elegante 💌</h1>
+            <p>Envie uma mensagem para aquela pessoa especial!</p>
+        </header>
+        <main>
+            <form id="messageForm">
+                <div class="form-group">
+                    <label for="recipient">Para:</label>
+                    <input type="text" id="recipient" required placeholder="Nome do Destinatário">
+                </div>
+                <div class="form-group">
+                    <label for="message">Mensagem:</label>
+                    <select id="message" required>
+                        <option value="" disabled selected>Escolha uma mensagem...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sender">De:</label>
+                    <input type="text" id="sender" required placeholder="Seu Nome (ou admirador secreto)">
+                </div>
+                <button type="submit">Enviar Mensagem</button>
+            </form>
+            <div id="confirmation" class="hidden">
+                <p>✅ Mensagem enviada com sucesso!</p>
+            </div>
+        </main>
+        <footer>
+            <!-- O link para o admin foi removido -->
+        </footer>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html> 

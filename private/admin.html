@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Correio Elegante</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="/images/logo.png" alt="BigBox Logo" class="logo">
+            <h1>Painel de Administração</h1>
+        </header>
+        <main>
+            <section class="admin-section">
+                <h2>Configurar Mensagens Prontas</h2>
+                <div id="messages-list-container">
+                    <!-- Mensagens serão renderizadas aqui pelo JS -->
+                </div>
+                <div class="admin-actions">
+                    <button type="button" id="addMessageBtn" class="btn-add">
+                        <span>+</span> Adicionar Nova Mensagem
+                    </button>
+                    <button type="button" id="saveChangesBtn" class="btn-save">
+                        Salvar Alterações
+                    </button>
+                </div>
+            </section>
+            
+            <section class="admin-section">
+                <h2>Log de Mensagens Enviadas</h2>
+                <div class="log-container">
+                    <table id="messageLog">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Para</th>
+                                <th>Mensagem</th>
+                                <th>De</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- O log será preenchido aqui -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+        <footer>
+            <a href="/">Voltar para a página de envio</a>
+        </footer>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/admin.js"></script>
+</body>
+</html> 

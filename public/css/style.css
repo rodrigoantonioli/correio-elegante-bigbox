@@ -1,0 +1,337 @@
+@import url('https://fonts.googleapis.com/css2?family=Lilita+One&family=Poppins:wght@400;500;700&display=swap');
+
+:root {
+    --primary-color: #5D2A8E; /* Roxo do logo BigBox */
+    --accent-color: #F2B705; /* Amarelo Junino */
+    --text-color: #333;
+    --bg-color: #fff;
+    --border-radius: 12px;
+    --box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #F2EBF9;
+    /* Fundo temático de toalha de mesa quadriculada (sutil) */
+    background-image:
+        linear-gradient(rgba(93, 42, 142, 0.07) 1px, transparent 1px),
+        linear-gradient(to right, rgba(93, 42, 142, 0.07) 1px, transparent 1px);
+    background-size: 20px 20px;
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.container, .display-container {
+    background-color: var(--bg-color);
+    padding: 30px 40px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+header {
+    margin-bottom: 25px;
+}
+
+header .logo {
+    max-width: 250px;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-family: 'Lilita One', cursive;
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+input[type="text"], input[type="password"], select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    box-sizing: border-box;
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input[type="text"]:focus, input[type="password"]:focus, select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(93, 42, 142, 0.2);
+}
+
+
+button {
+    background: linear-gradient(45deg, var(--primary-color), #8e44ad);
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: var(--border-radius);
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.hidden {
+    display: none !important;
+}
+
+#confirmation {
+    margin-top: 20px;
+    color: #27ae60;
+    font-weight: 500;
+}
+
+/* Telão */
+.display-container {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    max-width: 100%;
+    height: 100vh;
+    padding: 20px;
+}
+
+#message-display .message-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 5vh 5vw;
+    border: 3px solid var(--accent-color);
+    border-radius: 20px;
+    max-width: 90vw;
+    min-height: 80vh;
+}
+
+#message-display .recipient, #message-display .sender {
+    font-family: 'Lilita One', cursive;
+    font-size: 4rem;
+    color: var(--primary-color);
+}
+
+#message-display .message-text {
+    font-size: 5rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 5vh 0;
+}
+
+#display-logo {
+    position: fixed;
+    bottom: 50px;
+    right: 50px;
+    max-width: 150px;
+    opacity: 0.8;
+}
+
+/* QR Code */
+#qr-code-display h2 {
+    font-family: 'Lilita One', cursive;
+    font-size: 3.5rem;
+    color: var(--primary-color);
+    text-shadow: 2px 2px #fff;
+}
+
+#qr-code {
+    border: 5px solid var(--bg-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+/* Estilos do QR Code Pequeno */
+#small-qr-container {
+    position: fixed;
+    bottom: 50px;
+    left: 50px;
+    z-index: 1001;
+    background: rgba(255, 255, 255, 0.98);
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    text-align: center;
+    transition: opacity 0.5s ease;
+}
+
+#small-qr-container canvas {
+    border: 5px solid var(--bg-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+/* Contador */
+#queue-counter {
+    position: fixed;
+    top: 50px;
+    right: 50px;
+    z-index: 1001;
+    background: var(--accent-color);
+    color: var(--primary-color);
+    font-family: 'Lilita One', cursive;
+    font-size: 1.8rem;
+    border: 3px solid var(--primary-color);
+}
+
+#queue-counter p {
+    margin: 0;
+}
+
+/* Estilos do Admin */
+.admin-section {
+    margin-bottom: 40px;
+}
+
+#messages-list .message-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#messages-list input {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+#addMessageBtn {
+    background-color: #28a745;
+    margin-right: 10px;
+}
+
+#addMessageBtn:hover {
+    background-color: #218838;
+}
+
+.log-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+}
+
+#messageLog {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#messageLog th, #messageLog td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+
+#messageLog th {
+    background-color: var(--secondary-color);
+    position: sticky;
+    top: 0;
+}
+
+/* Estilos da Página de Admin Melhorada */
+.admin-section h2 {
+    font-family: 'Lilita One', cursive;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+#messages-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.message-item-admin {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: var(--border-radius);
+    border: 1px solid #eee;
+}
+
+.message-item-admin textarea {
+    flex-grow: 1;
+    border: none;
+    background: transparent;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    resize: none;
+    overflow-y: hidden; /* Controlado pelo JS */
+    min-height: 24px;
+    line-height: 1.5;
+    padding: 5px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.message-item-admin textarea:focus {
+    outline: none;
+    background: #fff;
+    box-shadow: 0 0 5px rgba(0,0,0,0.05);
+}
+
+.btn-delete {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #e74c3c;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s, transform 0.2s;
+    width: auto;
+}
+
+.btn-delete:hover {
+    color: #c0392b;
+    transform: scale(1.1);
+    box-shadow: none;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 25px;
+}
+
+.admin-actions button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: auto;
+    padding: 10px 20px;
+}
+
+.admin-actions .btn-add {
+    background: #27ae60;
+}
+
+.admin-actions .btn-add:hover {
+    background: #2ecc71;
+} 

@@ -1,0 +1,17 @@
+{
+  "name": "correio-elegante",
+  "version": "1.0.0",
+  "description": "App para envio de mensagens em tempo real para um telão em festas.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cookie-session": "^2.1.0",
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  }
+} 

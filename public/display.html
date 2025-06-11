@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telão - Correio Elegante</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+</head>
+<body>
+    <div id="start-overlay">
+        <button id="startButton">▶ Iniciar Telão</button>
+        <p>É necessário um clique para ativar o áudio no navegador.</p>
+    </div>
+
+    <div class="display-container hidden">
+
+        <div id="message-display" class="hidden">
+            <div class="message-card">
+                <p class="recipient">Para: <span id="display-recipient"></span></p>
+                <p class="message-text">"<span id="display-message"></span>"</p>
+                <p class="sender">De: <span id="display-sender"></span></p>
+            </div>
+        </div>
+
+        <div id="qr-code-display">
+            <h2>Envie seu Correio Elegante</h2>
+            <canvas id="qr-code"></canvas>
+            <p>Aponte a câmera do seu celular para o QR Code</p>
+        </div>
+
+    </div>
+    
+    <div id="small-qr-container" class="hidden">
+        <canvas id="qr-code-small"></canvas>
+        <p>Envie a sua mensagem!</p>
+    </div>
+
+    <div id="queue-counter" class="hidden">
+        <p>🔔 <span id="queue-count">0</span></p>
+    </div>
+
+    <img src="/images/logo.png" alt="BigBox Logo" id="display-logo">
+
+    <audio id="notification-sound" src="/audio/notification.mp3" preload="auto"></audio>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/display.js"></script>
+</body>
+</html> 
