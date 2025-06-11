@@ -182,29 +182,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentMode === 'ticker') tickerContent.classList.remove('animate');
         
         clearTimeout(currentMessageTimeout);
-        clearTimeout(carouselTimeout);
+        currentMessageTimeout = null;
         messageStartTime = null;
 
         setScreenState('waiting'); // Volta para a tela de espera
         
         socket.emit('messageDisplayed');
-
-        // Se o telão estava ocupado quando reconectamos, retoma a exibição
-        if (state.isBusy && state.currentMessage) {
-            console.log("Retomando exibição da mensagem atual...");
-            const elapsedTime = Date.now() - new Date(state.currentMessage.timestamp).getTime();
-            const remainingTime = MAX_DISPLAY_TIME - elapsedTime;
-            
-            if (remainingTime > 1000) { // Se resta mais de 1 segundo
-                // Define o histórico para que o carrossel funcione corretamente
-                displayedHistory = state.displayedHistory; 
-                startDisplay(state.currentMessage, remainingTime);
-            } else {
-                // Se o tempo já expirou, notifica o servidor e vai para a espera
-                setScreenState('waiting');
-                socket.emit('messageDisplayed');
-            }
-        }
     };
 
     // --- Listeners de Socket ---
