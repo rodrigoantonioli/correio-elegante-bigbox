@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`Modo alterado para: ${newMode}`);
     };
 
-    const startDisplay = (msg) => {
+    const startDisplay = (msg, duration) => {
         setScreenState('message');
         displayWrapper.classList.remove('hidden');
 
@@ -172,7 +172,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const fullText = `Correio Elegante para ${msg.recipient}. A mensagem é: ${msg.message}. Enviado por: ${msg.sender}.`;
         speakMessage(fullText);
         messageStartTime = Date.now();
-        currentMessageTimeout = setTimeout(finishDisplay, MAX_DISPLAY_TIME);
+        
+        const displayDuration = duration !== undefined ? duration : MAX_DISPLAY_TIME;
+        currentMessageTimeout = setTimeout(finishDisplay, displayDuration);
     };
 
     const finishDisplay = () => {
@@ -186,6 +188,23 @@ document.addEventListener('DOMContentLoaded', () => {
         setScreenState('waiting'); // Volta para a tela de espera
         
         socket.emit('messageDisplayed');
+
+        // Se o telão estava ocupado quando reconectamos, retoma a exibição
+        if (state.isBusy && state.currentMessage) {
+            console.log("Retomando exibição da mensagem atual...");
+            const elapsedTime = Date.now() - new Date(state.currentMessage.timestamp).getTime();
+            const remainingTime = MAX_DISPLAY_TIME - elapsedTime;
+            
+            if (remainingTime > 1000) { // Se resta mais de 1 segundo
+                // Define o histórico para que o carrossel funcione corretamente
+                displayedHistory = state.displayedHistory; 
+                startDisplay(state.currentMessage, remainingTime);
+            } else {
+                // Se o tempo já expirou, notifica o servidor e vai para a espera
+                setScreenState('waiting');
+                socket.emit('messageDisplayed');
+            }
+        }
     };
 
     // --- Listeners de Socket ---
@@ -199,12 +218,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Se o telão estava ocupado quando reconectamos, retoma a exibição
         if (state.isBusy && state.currentMessage) {
             console.log("Retomando exibição da mensagem atual...");
-            const remainingTime = state.currentMessage.duration - (Date.now() - new Date(state.currentMessage.timestamp).getTime());
+            const elapsedTime = Date.now() - new Date(state.currentMessage.timestamp).getTime();
+            const remainingTime = MAX_DISPLAY_TIME - elapsedTime;
             
             if (remainingTime > 1000) { // Se resta mais de 1 segundo
                 // Define o histórico para que o carrossel funcione corretamente
                 displayedHistory = state.displayedHistory; 
-                startDisplay(state.currentMessage);
+                startDisplay(state.currentMessage, remainingTime);
             } else {
                 // Se o tempo já expirou, notifica o servidor e vai para a espera
                 setScreenState('waiting');
