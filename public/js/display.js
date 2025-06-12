@@ -95,19 +95,30 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const stopIncentiveCycle = () => clearInterval(phraseInterval);
     
-    // --- Lógica de Voz (sem alterações) ---
-    const loadAndFilterVoices = () => ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR');
-    window.speechSynthesis.onvoiceschanged = loadAndFilterVoices;
-    loadAndFilterVoices();
+    // --- Lógica de Voz ---
+    const loadAndFilterVoices = () => {
+        return window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR');
+    }
+    
     const speakMessage = (text, forceVoice) => {
-        if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+        const ptBrVoices = loadAndFilterVoices();
+    
+        if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+        }
+        
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'pt-BR';
+        
         if (ptBrVoices.length > 0) {
             utterance.voice = forceVoice || ptBrVoices[Math.floor(Math.random() * ptBrVoices.length)];
+        } else {
+            console.warn("Nenhuma voz em Português (pt-BR) encontrada. Usando a voz padrão.");
         }
+        
         utterance.pitch = 0.8 + Math.random() * 0.4;
         utterance.rate = 0.9 + Math.random() * 0.3;
+        
         window.speechSynthesis.speak(utterance);
     };
 
