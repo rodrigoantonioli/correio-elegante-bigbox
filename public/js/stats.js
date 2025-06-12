@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Conectar à sala de stats no servidor
     socket.on('connect', () => {
+        socket.emit('register', '/stats');
         socket.emit('join_stats_admin');
     });
 

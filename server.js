@@ -272,7 +272,8 @@ const getPageDisplayName = (page) => {
         '/login': 'Login',
         'clients_admin': 'Monitor de Clientes',
         'stats_admin': 'Estatísticas',
-        'Desconhecida': 'Conectando...'
+        'Conectando...': 'Conectando...',
+        'Página Desconhecida': 'Página Desconhecida'
     };
     return pageMap[page] || page;
 };
@@ -362,10 +363,29 @@ io.on('connection', (socket) => {
     connectedClients[socket.id] = {
         id: socket.id,
         ip: ip,
-        page: 'Desconhecida',
+        page: 'Conectando...',
         userAgent: socket.handshake.headers['user-agent'] || 'N/A',
         connectedAt: new Date()
     };
+    
+    // Timeout para detectar páginas que não se registram em 5 segundos
+    setTimeout(() => {
+        if (connectedClients[socket.id] && connectedClients[socket.id].page === 'Conectando...') {
+            // Tenta detectar a página pela URL do referer
+            const referer = socket.handshake.headers.referer;
+            if (referer) {
+                try {
+                    const url = new URL(referer);
+                    connectedClients[socket.id].page = url.pathname || 'Página Desconhecida';
+                } catch (e) {
+                    connectedClients[socket.id].page = 'Página Desconhecida';
+                }
+            } else {
+                connectedClients[socket.id].page = 'Página Desconhecida';
+            }
+            updateClientsAdmin();
+        }
+    }, 5000);
     
     // Atualiza o pico de clientes conectados
     const currentClientCount = Object.keys(connectedClients).length;

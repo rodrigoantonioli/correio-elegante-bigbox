@@ -161,6 +161,7 @@
             const blockedCount = document.getElementById('blocked-count');
 
             socket.on('connect', () => {
+                socket.emit('register', '/clients');
                 socket.emit('join_clients_admin');
             });
 
