@@ -175,17 +175,28 @@ const appendToLogFile = (message) => {
     const ua = useragent.parse(userAgent);
     let deviceInfo = 'Desconhecido';
     
-    if (ua.isMobile) {
-        deviceInfo = `📱 ${ua.device.family || 'Celular'} - ${ua.os.family || 'Mobile'}`;
-    } else if (ua.isDesktop) {
-        deviceInfo = `💻 ${ua.browser.family || 'Desktop'} - ${ua.os.family || 'Desktop'}`;
-    } else if (ua.isTablet) {
-        deviceInfo = `📱 ${ua.device.family || 'Tablet'} - ${ua.os.family || 'Tablet'}`;
-    }
-    
-    // Adiciona informações do navegador se disponível
-    if (ua.browser.family && ua.browser.major) {
-        deviceInfo += ` (${ua.browser.family} ${ua.browser.major})`;
+    try {
+        if (ua.isMobile) {
+            const deviceName = (ua.device && ua.device.family) ? ua.device.family : 'Celular';
+            const osName = (ua.os && ua.os.family) ? ua.os.family : 'Mobile';
+            deviceInfo = `📱 ${deviceName} - ${osName}`;
+        } else if (ua.isDesktop) {
+            const browserName = (ua.browser && ua.browser.family) ? ua.browser.family : 'Desktop';
+            const osName = (ua.os && ua.os.family) ? ua.os.family : 'Desktop';
+            deviceInfo = `💻 ${browserName} - ${osName}`;
+        } else if (ua.isTablet) {
+            const deviceName = (ua.device && ua.device.family) ? ua.device.family : 'Tablet';
+            const osName = (ua.os && ua.os.family) ? ua.os.family : 'Tablet';
+            deviceInfo = `📱 ${deviceName} - ${osName}`;
+        }
+        
+        // Adiciona informações do navegador se disponível
+        if (ua.browser && ua.browser.family && ua.browser.major) {
+            deviceInfo += ` (${ua.browser.family} ${ua.browser.major})`;
+        }
+    } catch (error) {
+        console.error('Erro ao processar user-agent:', error);
+        deviceInfo = '📱 Dispositivo Móvel';
     }
     
     const logEntry = `[${timestamp}] [IP: ${message.ip}] [${deviceInfo}] Para: "${message.recipient}" | De: "${message.sender}" | Mensagem: "${message.message}"\n`;
