@@ -5,75 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Correio Elegante</title>
     <link rel="stylesheet" href="/css/style.css">
-    <style>
-        .nav-links {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .nav-links a {
-            margin: 0 15px;
-            color: #581c87;
-            text-decoration: none;
-            font-weight: bold;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
-        <div class="nav-links">
-            <a href="/admin">Gerenciar Mensagens</a>
+        <header>
+            <h1><img src="/images/logo.png" alt="Big Arraiá Ultra Bão" style="height: 50px; vertical-align: middle;"> Administração</h1>
+        </header>
+
+        <nav class="admin-nav">
+            <a href="/admin">Início</a>
             <a href="/history">Histórico</a>
             <a href="/clients">Monitor de Clientes</a>
             <a href="/stats">Estatísticas</a>
             <a href="/logout">Sair</a>
-        </div>
-        <h1><img src="/images/logo.png" alt="Logo BigBox" style="height: 50px; vertical-align: middle;"> Administração</h1>
+        </nav>
         
         <section class="admin-section" id="display-mode-section">
             <h2>Modo de Exibição do Telão</h2>
-            <div class="display-modes">
+            <div class="form-group">
                 <label><input type="radio" name="displayMode" value="default"> Padrão</label>
                 <label><input type="radio" name="displayMode" value="carousel"> Carrossel</label>
                 <label><input type="radio" name="displayMode" value="ticker"> Letreiro</label>
             </div>
         </section>
 
-        <h2>Mensagens na Fila</h2>
-        <div id="queue-status">
-            <section class="admin-section">
-                <h2>Configurar Mensagens Prontas</h2>
-                <div id="messages-list-container">
-                    <!-- Mensagens serão renderizadas aqui pelo JS -->
-                </div>
-                <div class="admin-actions">
-                    <button type="button" id="addMessageBtn" class="btn-add">
-                        <span>+</span> Adicionar Nova Mensagem
-                    </button>
-                    <button type="button" id="saveChangesBtn" class="btn-save">
-                        Salvar Alterações
-                    </button>
-                </div>
-            </section>
-            
-            <section class="admin-section">
-                <h2>Log de Mensagens Enviadas</h2>
-                <div class="log-container">
-                    <table id="messageLog">
-                        <thead>
-                            <tr>
-                                <th>Data/Hora</th>
-                                <th>Para</th>
-                                <th>Mensagem</th>
-                                <th>De</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- O log será preenchido aqui -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
+        <section class="admin-section" id="message-management-section">
+            <h2>Gerenciar Mensagens Prontas</h2>
+            <div id="predefined-messages-list">
+                <!-- As mensagens serão carregadas aqui -->
+            </div>
+            <div class="admin-actions">
+                <button id="btn-add-message" class="btn-add">Adicionar Mensagem</button>
+                <button id="btn-save-messages" class="btn-save">Salvar Alterações</button>
+            </div>
+        </section>
+
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/admin.js"></script>

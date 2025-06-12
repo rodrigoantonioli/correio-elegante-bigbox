@@ -7,65 +7,110 @@
     <link rel="stylesheet" href="/css/style.css">
     <style>
         .history-container {
-            background-color: #f1f2f6;
-            color: #2c3e50;
-            font-family: 'Courier New', Courier, monospace;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            max-height: 70vh;
+            max-height: 60vh;
             overflow-y: auto;
-            border: 1px solid #dfe4ea;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            background-color: #f9f9f9;
         }
-        .container footer {
-            margin-top: 20px;
+        .log-entry {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        .history-actions {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
+            gap: 15px;
+            margin-top: 20px;
         }
-        .nav-links {
+        .history-actions button, .history-actions a {
+            flex-grow: 1;
             text-align: center;
-            margin-bottom: 2rem;
-        }
-        .nav-links a {
-            margin: 0 15px;
-            color: #581c87;
+            padding: 12px;
             text-decoration: none;
-            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="nav-links">
-            <a href="/admin">Gerenciar Mensagens</a>
+        <header>
+            <h1><img src="/images/logo.png" alt="Big Arraiá Ultra Bão" style="height: 50px; vertical-align: middle;"> Histórico de Mensagens</h1>
+        </header>
+        <nav class="admin-nav">
+            <a href="/admin">Início</a>
             <a href="/history">Histórico</a>
             <a href="/clients">Monitor de Clientes</a>
             <a href="/stats">Estatísticas</a>
             <a href="/logout">Sair</a>
-        </div>
-        <h1><img src="/images/logo.png" alt="Logo BigBox" style="height: 50px; vertical-align: middle;"> Histórico de Mensagens</h1>
-        <pre id="history-log" class="history-container">Carregando histórico...</pre>
+        </nav>
+
+        <section class="admin-section">
+            <div class="history-actions">
+                <a href="/download-log" download class="button btn-download">Baixar Histórico</a>
+                <button id="clear-log-btn" class="btn-delete">Limpar Histórico</button>
+            </div>
+            <div id="history-log" class="history-container">
+                <p>Carregando histórico...</p>
+            </div>
+        </section>
     </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            fetch('/api/history')
-                .then(response => {
+            const historyLogContainer = document.getElementById('history-log');
+            const clearLogBtn = document.getElementById('clear-log-btn');
+
+            const fetchHistory = async () => {
+                try {
+                    const response = await fetch('/api/history');
                     if (!response.ok) {
-                        throw new Error('Falha ao carregar o histórico. Você está logado?');
+                        throw new Error('Falha ao carregar o histórico.');
                     }
-                    return response.text();
-                })
-                .then(text => {
-                    const logContainer = document.getElementById('history-log');
-                    logContainer.textContent = text.trim() ? text : 'Nenhuma mensagem no histórico ainda.';
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    document.getElementById('history-log').textContent = 'Erro ao carregar o histórico.';
-                });
+                    const data = await response.json();
+                    
+                    historyLogContainer.innerHTML = ''; // Limpa o container
+                    if (data.log && data.log.length > 0) {
+                        data.log.forEach(entry => {
+                            const div = document.createElement('div');
+                            div.className = 'log-entry';
+                            div.textContent = entry;
+                            historyLogContainer.appendChild(div);
+                        });
+                    } else {
+                        historyLogContainer.innerHTML = '<p>Nenhum registro no histórico.</p>';
+                    }
+                } catch (error) {
+                    historyLogContainer.innerHTML = `<p style="color: red;">${error.message}</p>`;
+                }
+            };
+
+            clearLogBtn.addEventListener('click', async () => {
+                if (!confirm('Tem certeza que deseja apagar TODO o histórico de mensagens? Esta ação não pode ser desfeita.')) {
+                    return;
+                }
+                try {
+                    const response = await fetch('/clear-log', { method: 'POST' });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert('Histórico limpo com sucesso!');
+                        fetchHistory(); // Recarrega a lista
+                    } else {
+                        throw new Error(result.message || 'Falha ao limpar o histórico.');
+                    }
+                } catch (error) {
+                    alert(`Erro: ${error.message}`);
+                }
+            });
+
+            fetchHistory();
         });
     </script>
 </body>

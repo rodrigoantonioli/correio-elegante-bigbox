@@ -1,5 +1,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Lilita+One&family=Poppins:wght@400;500;700&display=swap');
 
+@layer base {
+    body {
+        background-image: url('../images/BG.png') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-attachment: fixed !important;
+        background-color: transparent !important;
+    }
+
+    body.display-page {
+        background-image: url('../images/BG.png') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-attachment: fixed !important;
+    }
+
+    .display-page #waiting-screen {
+        background: transparent !important;
+    }
+
+    .display-page #start-overlay {
+        background-color: rgba(0, 0, 0, 0.7) !important;
+        -webkit-backdrop-filter: blur(5px) !important;
+        backdrop-filter: blur(5px) !important;
+    }
+}
+
 :root {
     --primary-color: #5D2A8E; /* Roxo do logo BigBox */
     --accent-color: #F2B705; /* Amarelo Junino */
@@ -14,11 +41,6 @@
    ========================================================================== */
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: #F2EBF9;
-    background-image:
-        linear-gradient(rgba(93, 42, 142, 0.07) 1px, transparent 1px),
-        linear-gradient(to right, rgba(93, 42, 142, 0.07) 1px, transparent 1px);
-    background-size: 20px 20px;
     color: var(--text-color);
     margin: 0;
     padding: 20px;
@@ -38,18 +60,20 @@ body {
     width: 100%;
     text-align: center;
     border: 1px solid #ddd;
+    min-width: 0;
 }
 
 header {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
 }
 
 header .logo {
-    max-width: 250px;
+    max-width: 300px;
+    width: 60%;
 }
 
 header h1 {
@@ -197,7 +221,6 @@ button:hover {
 body.display-page {
     padding: 0;
     overflow: hidden;
-    background: #1a1a1a;
 }
 
 .display-page #start-overlay {
@@ -206,9 +229,6 @@ body.display-page {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -219,9 +239,19 @@ body.display-page {
 }
 .display-page #startButton {
     font-size: 2rem;
-    padding: 20px 40px;
-    width: auto;
-    border-radius: 50px;
+    padding: 20px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    background-color: transparent; /* Tornar transparente para ver o fundo */
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box; /* Garante que o padding não estoure a tela */
 }
 .display-page #start-overlay p {
     margin-top: 20px;
@@ -243,30 +273,38 @@ body.display-page {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 30px;
-    background: radial-gradient(circle, #3a1d5a, var(--primary-color));
+    gap: 2vh;
     color: #fff;
     text-align: center;
     padding: 20px;
     box-sizing: border-box;
+    overflow: hidden;
 }
 .display-page #waiting-screen #qr-code {
+    background-color: rgba(255, 255, 255, 0.9);
     border: 8px solid white;
     border-radius: var(--border-radius);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
+.display-page #waiting-screen .logo {
+    max-width: 30vw;
+    max-height: 25vh;
+    object-fit: contain;
+    filter: drop-shadow(0 0 20px black) drop-shadow(0 0 5px black);
+}
 .display-page #incentive-phrase {
     font-family: 'Lilita One', cursive;
-    font-size: clamp(2.5rem, 6vw, 4rem);
-    text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    text-shadow: 0px 0px 10px black, 0px 0px 5px black;
     animation: pulse 2s infinite ease-in-out;
 }
 .display-page #total-messages-counter {
     background: rgba(0, 0, 0, 0.3);
-    padding: 10px 20px;
+    padding: 5px 15px;
     border-radius: 50px;
-    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    font-size: clamp(1rem, 2.5vw, 1.5rem);
     font-weight: 500;
+    text-shadow: 0 0 8px #000, 0 0 3px #000;
 }
 
 .display-page #message-screen {
@@ -276,35 +314,55 @@ body.display-page {
     background-color: #f4f4f9;
 }
 .display-page #side-panel {
-    width: 320px;
-    flex-shrink: 0;
-    background-color: #fff;
-    box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+    width: 380px;
+    background-color: rgba(255, 255, 255, 0.9);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    padding: 30px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-around;
-    padding: 30px 10px;
+    justify-content: space-between;
+    gap: 25px;
+    box-sizing: border-box;
     text-align: center;
-    z-index: 10;
+    color: var(--primary-color);
+    border-right: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 5px 0 25px rgba(0,0,0,0.15);
 }
 .display-page #side-logo {
-    max-width: 180px;
+    max-width: 90%;
+    object-fit: contain;
+    margin-top: 15px;
 }
 .display-page .side-title {
     font-family: 'Lilita One', cursive;
-    font-size: 2.8rem;
+    font-size: 2.2rem;
     color: var(--primary-color);
     line-height: 1.1;
+    font-weight: 500;
+}
+.display-page .side-title h1 {
+    font-size: inherit;
+    margin: 0;
+}
+.display-page .side-subtitle {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    color: var(--text-color);
+    margin-top: 8px;
+    font-weight: 400;
 }
 .display-page #side-qr-code canvas {
-    border: 4px solid #eee;
+    border: 6px solid var(--primary-color);
     border-radius: var(--border-radius);
+    background: #fff;
 }
 .display-page #side-qr-code p {
-    font-weight: 500;
-    color: var(--text-color);
     margin-top: 10px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--primary-color);
 }
 .display-page #content-panel {
     flex-grow: 1;
@@ -332,8 +390,10 @@ body.display-page {
 }
 
 .display-page .message-card {
-    background: #fff;
-    padding: clamp(20px, 4vw, 50px);
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    padding: 2vw 3vw;
     border-radius: 20px;
     border-left: 10px solid var(--primary-color);
     box-shadow: var(--box-shadow);
@@ -512,4 +572,65 @@ body.display-page {
         height: 45px;
         font-size: 1.2rem;
     }
+}
+
+/* Adicionando estilo para o texto do QR code */
+.display-page #waiting-screen > p {
+    font-size: clamp(0.9rem, 2vw, 1.2rem);
+    text-shadow: 0 0 8px #000, 0 0 3px #000;
+    margin: 0;
+}
+
+/* ==========================================================================
+   Estilos Específicos da Página de Estatísticas
+   ========================================================================== */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+.stat-card {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+.stat-card h3 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    color: #555;
+}
+.stat-card p {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 10px 0 0;
+}
+
+.ranking-list {
+    margin-top: 20px;
+}
+
+.ranking-list ol {
+    list-style-type: decimal;
+    padding-left: 20px;
+    margin: 0;
+}
+.ranking-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 1rem;
+}
+.ranking-list li:last-child {
+    border-bottom: none;
+}
+.ranking-list li span {
+    color: #333;
+}
+.ranking-list li strong {
+    color: var(--primary-color);
+    margin-left: 8px;
 }

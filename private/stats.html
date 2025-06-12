@@ -59,19 +59,24 @@
 </head>
 <body>
     <div class="container">
-        <div class="nav-links">
-            <a href="/admin">Gerenciar Mensagens</a>
+        <header>
+            <h1><img src="/images/logo.png" alt="Big Arraiá Ultra Bão" style="height: 50px; vertical-align: middle;"> Estatísticas</h1>
+        </header>
+        <nav class="admin-nav">
+            <a href="/admin">Início</a>
             <a href="/history">Histórico</a>
             <a href="/clients">Monitor de Clientes</a>
             <a href="/stats">Estatísticas</a>
             <a href="/logout">Sair</a>
-        </div>
-        <h1><img src="/images/logo.png" alt="Logo BigBox" style="height: 50px; vertical-align: middle;"> Estatísticas</h1>
-
+        </nav>
         <div class="stats-grid">
             <div class="stat-card">
-                <h3>Pico de Clientes</h3>
-                <span id="peak-clients" class="value">0</span>
+                <h3>Total de Mensagens Enviadas</h3>
+                <p id="total-messages">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Pico de Clientes Conectados</h3>
+                <p id="peak-clients">0</p>
             </div>
             <div class="stat-card">
                 <h3>Clientes Atuais</h3>
@@ -92,8 +97,22 @@
                 </ul>
             </div>
         </div>
-    </div>
 
+        <section class="admin-section">
+            <h2>Mensagens Mais Populares</h2>
+            <div id="popular-messages-container" class="ranking-list">
+                <!-- Ranking de mensagens será inserido aqui -->
+            </div>
+        </section>
+
+        <section class="admin-section">
+            <h2>Top 5 Homenageados</h2>
+            <div id="top-recipients-container" class="ranking-list">
+                <!-- Ranking de destinatários será inserido aqui -->
+            </div>
+        </section>
+
+    </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/stats.js"></script>
 </body>

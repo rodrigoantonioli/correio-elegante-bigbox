@@ -4,6 +4,7 @@ const socketIo = require('socket.io');
 const fs = require('fs');
 const path = require('path');
 const cookieSession = require('cookie-session');
+const useragent = require('express-useragent');
 
 const app = express();
 const server = http.createServer(app);
@@ -23,6 +24,7 @@ app.use(cookieSession({
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Para parsear o formulário de login
+app.use(useragent.express()); // Usar o middleware user-agent
 
 let messageQueue = [];
 let isDisplayBusy = false;
@@ -38,7 +40,8 @@ const stats = {
     pageAccessCounts: {},
     predefinedMessageCounts: {},
     peakConcurrentClients: 0,
-    clientsOverTime: [] // Formato: { time: Date, count: Number }
+    popularMessages: [],
+    topRecipients: []
 };
 
 const logFilePath = path.join(__dirname, 'message_history.log');
@@ -111,14 +114,44 @@ app.get('/history', checkAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'private', 'history.html'));
 });
 
-// Nova rota de API para buscar o conteúdo do log
+// Nova rota de API para buscar o conteúdo do log, agora processado
 app.get('/api/history', checkAuth, (req, res) => {
     fs.readFile(logFilePath, 'utf8', (err, data) => {
         if (err) {
+            if (err.code === 'ENOENT') { // Se o arquivo não existe, retorna vazio
+                return res.json({ log: [] });
+            }
             console.error('Erro ao ler arquivo de log:', err);
-            return res.status(500).send('Erro ao ler o log.');
+            return res.status(500).json({ error: 'Erro ao ler o log.' });
         }
-        res.type('text/plain').send(data);
+        const logEntries = data.split('\n').filter(Boolean).reverse(); // Inverte para o mais novo primeiro
+        res.json({ log: logEntries });
+    });
+});
+
+// Rota para baixar o log
+app.get('/download-log', checkAuth, (req, res) => {
+    res.download(logFilePath, 'correio-elegante-historico.log', (err) => {
+        if (err) {
+            // Se o arquivo não existir, envia uma mensagem amigável
+            if (err.code === 'ENOENT') {
+                return res.status(404).send('Nenhum histórico para baixar ainda.');
+            }
+            console.error("Erro ao baixar o log:", err);
+            res.status(500).send("Não foi possível baixar o log.");
+        }
+    });
+});
+
+// Rota para limpar o log
+app.post('/clear-log', checkAuth, (req, res) => {
+    fs.truncate(logFilePath, 0, (err) => {
+        if (err && err.code !== 'ENOENT') { // Ignora erro se o arquivo não existe
+            console.error("Erro ao limpar o log:", err);
+            return res.status(500).json({ success: false, message: "Falha ao limpar o histórico." });
+        }
+        console.log('Histórico de mensagens limpo pelo administrador.');
+        res.json({ success: true, message: "Histórico limpo com sucesso!" });
     });
 });
 
@@ -131,7 +164,8 @@ app.get('/logout', (req, res) => {
 // Função para salvar uma mensagem no arquivo de log
 const appendToLogFile = (message) => {
     const timestamp = new Date(message.timestamp).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-    const logEntry = `[${timestamp}] [IP: ${message.ip}] Para: "${message.recipient}" | De: "${message.sender}" | Mensagem: "${message.message}"\n`;
+    const device = message.device || 'Dispositivo desconhecido';
+    const logEntry = `[${timestamp}] [IP: ${message.ip}] [Dispositivo: ${device}] Para: "${message.recipient}" | De: "${message.sender}" | Mensagem: "${message.message}"\n`;
     
     fs.appendFile(logFilePath, logEntry, (err) => {
         if (err) {
@@ -194,24 +228,18 @@ const processQueue = () => {
 
 // Função para enviar a lista de clientes atualizada para o admin de clientes
 const updateClientsAdmin = () => {
-    const clientsByIp = {};
-    for (const client of Object.values(connectedClients)) {
-        if (!clientsByIp[client.ip]) {
-            clientsByIp[client.ip] = {
-                ip: client.ip,
-                pages: new Set() // Usar Set para evitar páginas duplicadas se o cliente reconectar rápido
-            };
-        }
-        clientsByIp[client.ip].pages.add(client.page);
-    }
-
-    const groupedClients = Object.values(clientsByIp).map(group => ({
-        ...group,
-        pages: Array.from(group.pages) // Converter Set para Array para enviar via JSON
-    }));
+    const clientsData = Object.values(connectedClients).map(client => {
+        const ua = useragent.parse(client.userAgent || '');
+        return {
+            ip: client.ip,
+            page: client.page,
+            device: ua.isMobile ? 'Celular' : (ua.isDesktop ? 'Computador' : 'Outro'),
+            connectedAt: client.connectedAt
+        };
+    });
 
     const payload = {
-        clients: groupedClients,
+        clients: clientsData,
         blocked: Array.from(blockedIps)
     };
     io.to('clients_admin_room').emit('clientsUpdate', payload);
@@ -219,21 +247,52 @@ const updateClientsAdmin = () => {
 
 // Função para enviar as estatísticas atualizadas
 const updateStatsAdmin = () => {
+    try {
+        const data = fs.readFileSync(logFilePath, 'utf8');
+        const lines = data.split('\n').filter(Boolean);
+        
+        // Calcular mensagens populares
+        const messageCounts = {};
+        lines.forEach(line => {
+            const match = line.match(/Mensagem: "([^"]*)"/);
+            if (match && match[1]) {
+                const msg = match[1];
+                messageCounts[msg] = (messageCounts[msg] || 0) + 1;
+            }
+        });
+        const sortedMessages = Object.entries(messageCounts)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 5);
+        stats.popularMessages = sortedMessages.map(([message, count]) => ({ message, count }));
+
+        // Calcular destinatários mais populares
+        const recipientCounts = {};
+        lines.forEach(line => {
+            const match = line.match(/Para: "([^"]*)"/);
+            if (match && match[1]) {
+                const recipient = match[1];
+                recipientCounts[recipient] = (recipientCounts[recipient] || 0) + 1;
+            }
+        });
+        const sortedRecipients = Object.entries(recipientCounts)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 5);
+        stats.topRecipients = sortedRecipients.map(([name, count]) => ({ name, count }));
+
+        stats.totalMessages = lines.length;
+
+    } catch (err) {
+        if (err.code !== 'ENOENT') {
+            console.error("Erro ao processar estatísticas:", err);
+        }
+        // Garante que as propriedades existam mesmo com erro
+        stats.popularMessages = [];
+        stats.topRecipients = [];
+        stats.totalMessages = 0;
+    }
+
     io.to('stats_admin_room').emit('statsUpdate', stats);
 };
-
-// Inicia a coleta de dados para o gráfico
-setInterval(() => {
-    stats.clientsOverTime.push({
-        time: new Date(),
-        count: Object.keys(connectedClients).length
-    });
-    // Mantém apenas os últimos 60 pontos (1 hora de dados)
-    if (stats.clientsOverTime.length > 60) {
-        stats.clientsOverTime.shift();
-    }
-    updateStatsAdmin();
-}, 60 * 1000); // A cada minuto
 
 io.on('connection', (socket) => {
     const forwardedFor = socket.handshake.headers['x-forwarded-for'];
@@ -249,7 +308,13 @@ io.on('connection', (socket) => {
     console.log(`Um cliente se conectou com o IP: ${ip}`);
 
     // Registro inicial do cliente (será atualizado pelo evento 'register')
-    connectedClients[socket.id] = { id: socket.id, ip: ip, page: 'Conectando...' };
+    connectedClients[socket.id] = {
+        id: socket.id,
+        ip: ip,
+        page: 'Desconhecida',
+        userAgent: socket.handshake.headers['user-agent'] || 'N/A',
+        connectedAt: new Date()
+    };
     
     // Atualiza o pico de clientes conectados
     const currentClientCount = Object.keys(connectedClients).length;
@@ -413,14 +478,39 @@ io.on('connection', (socket) => {
         updateClientsAdmin();
         updateStatsAdmin();
     });
+
+    // Evento para quando um admin entra na página de monitoramento
+    socket.on('join_clients_admin', () => {
+        socket.join('clients_admin_room');
+        console.log('Um admin entrou na sala de monitoramento');
+        updateClientsAdmin();
+    });
+
+    // Evento para quando um admin entra na página de estatísticas
+    socket.on('join_stats_admin', () => {
+        socket.join('stats_admin_room');
+        console.log('Um admin entrou na sala de estatísticas');
+        // Envia os dados atuais imediatamente para o novo admin
+        updateStatsAdmin();
+    });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
     const baseUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
     console.log(`Servidor rodando na porta ${PORT}`);
+    console.log("---------------------------------------");
+    console.log("Páginas disponíveis:");
     console.log(`- Envio de Mensagens: ${baseUrl}`);
     console.log(`- Telão: ${baseUrl}/display`);
-    console.log(`- Administração: ${baseUrl}/admin`);
+    console.log(`- Login Admin: ${baseUrl}/login.html`);
+    console.log("---------------------------------------");
+    console.log("Área de Administração (requer login):");
+    console.log(`- Painel Principal: ${baseUrl}/admin`);
+    console.log(`- Histórico: ${baseUrl}/history`);
     console.log(`- Monitoramento: ${baseUrl}/clients`);
     console.log(`- Estatísticas: ${baseUrl}/stats`);
+    console.log("---------------------------------------");
+    if (process.env.RENDER_EXTERNAL_URL) {
+        console.log(`URL Pública (se aplicável): ${process.env.RENDER_EXTERNAL_URL}`);
+    }
 }); 

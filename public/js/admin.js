@@ -4,10 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Registra o cliente na página de admin
     socket.emit('register', '/admin');
 
-    const messagesListContainer = document.getElementById('messages-list-container');
-    const addMessageBtn = document.getElementById('addMessageBtn');
-    const saveChangesBtn = document.getElementById('saveChangesBtn');
-    const messageLogBody = document.querySelector('#messageLog tbody');
+    const messagesListContainer = document.getElementById('predefined-messages-list');
+    const addMessageBtn = document.getElementById('btn-add-message');
+    const saveChangesBtn = document.getElementById('btn-save-messages');
     const displayModeRadios = document.querySelectorAll('input[name="displayMode"]');
 
     // Função para auto-ajustar a altura do textarea
@@ -45,35 +44,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Função para renderizar a lista de mensagens prontas
     const renderMessages = (messages) => {
         messagesListContainer.innerHTML = '';
+        if (!messagesListContainer) return; // Checagem de segurança
         messages.forEach(msg => {
             const messageItem = createMessageItem(msg);
             messagesListContainer.appendChild(messageItem);
         });
     };
     
-    // Função para renderizar o log de mensagens
-    const renderLog = (log) => {
-        messageLogBody.innerHTML = '';
-        log.slice().reverse().forEach(msg => {
-            const row = document.createElement('tr');
-            const formattedDate = msg.timestamp 
-                ? new Date(msg.timestamp).toLocaleString('pt-BR') 
-                : '---';
-            row.innerHTML = `
-                <td>${formattedDate}</td>
-                <td>${msg.recipient}</td>
-                <td>${msg.message}</td>
-                <td>${msg.sender}</td>
-            `;
-            messageLogBody.appendChild(row);
-        });
-    };
-    
-    // Carrega as mensagens e o log iniciais
+    // Carrega as mensagens iniciais
     socket.on('updateMessages', renderMessages);
-    socket.on('messageLog', renderLog);
     socket.emit('getMessages');
-    socket.emit('getLog');
 
     // --- Lógica do Modo de Exibição ---
     socket.on('initialState', (state) => {
