@@ -32,7 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
         items.forEach(item => {
             const li = document.createElement('li');
             const name = item.message || item.name; // Para funcionar com ambas as listas
-            li.innerHTML = `<span>"${name}"</span> <strong>(${item.count} vezes)</strong>`;
+            const countText = item.count === 1 ? 'vez' : 'vezes';
+            li.innerHTML = `<span>"${name}"</span> <strong>(${item.count} ${countText})</strong>`;
             ol.appendChild(li);
         });
         container.appendChild(ol);

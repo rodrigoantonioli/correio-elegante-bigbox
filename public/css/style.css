@@ -158,10 +158,22 @@ button:hover {
     font-weight: 500;
     padding: 8px 15px;
     border-radius: 8px;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
 }
 .admin-nav a:hover {
     background-color: rgba(93, 42, 142, 0.1);
+    transform: translateY(-1px);
+}
+.admin-nav a.logout-btn {
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+}
+.admin-nav a.logout-btn:hover {
+    background: linear-gradient(45deg, #c0392b, #a93226);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
 }
 
 .admin-section {
@@ -213,6 +225,8 @@ button:hover {
 .admin-actions .btn-add:hover { background-color: #218838; }
 .admin-actions .btn-save { background-color: #3498db; }
 .admin-actions .btn-save:hover { background-color: #2980b9; }
+.admin-actions .btn-refresh { background-color: #17a2b8; }
+.admin-actions .btn-refresh:hover { background-color: #138496; }
 
 /* ==========================================================================
    Estilos Específicos do Telão (.display-page)
@@ -297,14 +311,23 @@ body.display-page {
     font-size: clamp(1.5rem, 4vw, 2.5rem);
     text-shadow: 0px 0px 10px black, 0px 0px 5px black;
     animation: pulse 2s infinite ease-in-out;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 15px 25px;
+    border-radius: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
 }
 .display-page #total-messages-counter {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 5px 15px;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 10px 20px;
     border-radius: 50px;
     font-size: clamp(1rem, 2.5vw, 1.5rem);
     font-weight: 500;
     text-shadow: 0 0 8px #000, 0 0 3px #000;
+    border: 2px solid rgba(255, 255, 255, 0.15);
 }
 
 .display-page #message-screen {
@@ -579,6 +602,13 @@ body.display-page {
     font-size: clamp(0.9rem, 2vw, 1.2rem);
     text-shadow: 0 0 8px #000, 0 0 3px #000;
     margin: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: inline-block;
 }
 
 /* ==========================================================================

@@ -52,7 +52,7 @@ const checkAuth = (req, res, next) => {
     if (req.session.isAdmin) {
         return next();
     }
-    res.redirect('/login.html');
+    res.redirect('/login');
 };
 
 // Função para normalizar o endereço IP
@@ -78,13 +78,18 @@ const checkBlockedHttp = (req, res, next) => {
 // Aplicar o middleware de bloqueio a todas as rotas
 app.use(checkBlockedHttp);
 
+// Rota GET para a página de login
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
 // Rota de Login
 app.post('/login', (req, res) => {
     if (req.body.password === ADMIN_PASSWORD) {
         req.session.isAdmin = true;
         res.redirect('/admin');
     } else {
-        res.redirect('/login.html');
+        res.redirect('/login');
     }
 });
 
@@ -158,14 +163,32 @@ app.post('/clear-log', checkAuth, (req, res) => {
 // Rota de Logout
 app.get('/logout', (req, res) => {
     req.session = null; // Destrói a sessão
-    res.redirect('/login.html');
+    res.redirect('/login');
 });
 
 // Função para salvar uma mensagem no arquivo de log
 const appendToLogFile = (message) => {
     const timestamp = new Date(message.timestamp).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-    const device = message.device || 'Dispositivo desconhecido';
-    const logEntry = `[${timestamp}] [IP: ${message.ip}] [Dispositivo: ${device}] Para: "${message.recipient}" | De: "${message.sender}" | Mensagem: "${message.message}"\n`;
+    
+    // Melhor detecção de dispositivo usando user-agent
+    const userAgent = message.userAgent || '';
+    const ua = useragent.parse(userAgent);
+    let deviceInfo = 'Desconhecido';
+    
+    if (ua.isMobile) {
+        deviceInfo = `📱 ${ua.device.family || 'Celular'} - ${ua.os.family || 'Mobile'}`;
+    } else if (ua.isDesktop) {
+        deviceInfo = `💻 ${ua.browser.family || 'Desktop'} - ${ua.os.family || 'Desktop'}`;
+    } else if (ua.isTablet) {
+        deviceInfo = `📱 ${ua.device.family || 'Tablet'} - ${ua.os.family || 'Tablet'}`;
+    }
+    
+    // Adiciona informações do navegador se disponível
+    if (ua.browser.family && ua.browser.major) {
+        deviceInfo += ` (${ua.browser.family} ${ua.browser.major})`;
+    }
+    
+    const logEntry = `[${timestamp}] [IP: ${message.ip}] [${deviceInfo}] Para: "${message.recipient}" | De: "${message.sender}" | Mensagem: "${message.message}"\n`;
     
     fs.appendFile(logFilePath, logEntry, (err) => {
         if (err) {
@@ -394,7 +417,13 @@ io.on('connection', (socket) => {
         }
 
         // A obtenção de IP já foi feita na conexão
-        const fullMessage = { ...msg, id: Date.now(), timestamp: new Date(), ip: ip };
+        const fullMessage = { 
+            ...msg, 
+            id: Date.now(), 
+            timestamp: new Date(), 
+            ip: ip,
+            userAgent: socket.handshake.headers['user-agent'] || 'N/A'
+        };
         messageQueue.push(fullMessage);
         messageLog.push(fullMessage);
         appendToLogFile(fullMessage);
@@ -502,7 +531,7 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log("Páginas disponíveis:");
     console.log(`- Envio de Mensagens: ${baseUrl}`);
     console.log(`- Telão: ${baseUrl}/display`);
-    console.log(`- Login Admin: ${baseUrl}/login.html`);
+    console.log(`- Login Admin: ${baseUrl}/login`);
     console.log("---------------------------------------");
     console.log("Área de Administração (requer login):");
     console.log(`- Painel Principal: ${baseUrl}/admin`);

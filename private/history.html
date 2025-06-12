@@ -48,13 +48,14 @@
             <a href="/history">Histórico</a>
             <a href="/clients">Monitor de Clientes</a>
             <a href="/stats">Estatísticas</a>
-            <a href="/logout">Sair</a>
+            <a href="/logout" class="logout-btn">🚪 Sair</a>
         </nav>
 
         <section class="admin-section">
             <div class="history-actions">
-                <a href="/download-log" download class="button btn-download">Baixar Histórico</a>
-                <button id="clear-log-btn" class="btn-delete">Limpar Histórico</button>
+                <button id="refresh-btn" class="btn-refresh">🔄 Atualizar</button>
+                <a href="/download-log" download class="button btn-download">📥 Baixar Histórico</a>
+                <button id="clear-log-btn" class="btn-delete">🗑️ Limpar Histórico</button>
             </div>
             <div id="history-log" class="history-container">
                 <p>Carregando histórico...</p>
@@ -66,6 +67,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const historyLogContainer = document.getElementById('history-log');
             const clearLogBtn = document.getElementById('clear-log-btn');
+            const refreshBtn = document.getElementById('refresh-btn');
 
             const fetchHistory = async () => {
                 try {
@@ -90,6 +92,10 @@
                     historyLogContainer.innerHTML = `<p style="color: red;">${error.message}</p>`;
                 }
             };
+
+            refreshBtn.addEventListener('click', () => {
+                fetchHistory();
+            });
 
             clearLogBtn.addEventListener('click', async () => {
                 if (!confirm('Tem certeza que deseja apagar TODO o histórico de mensagens? Esta ação não pode ser desfeita.')) {

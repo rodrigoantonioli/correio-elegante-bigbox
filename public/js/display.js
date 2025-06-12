@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
         switchMode(state.displayMode);
         displayedHistory = state.displayedHistory || [];
         totalMessages = state.totalMessages || 0;
-        totalCountEl.textContent = totalMessages;
+        updateTotalMessagesDisplay();
 
         // Se o telão estava ocupado quando reconectamos, retoma a exibição
         if (state.isBusy && state.currentMessage) {
@@ -221,13 +221,13 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('modeUpdate', newMode => switchMode(newMode));
     socket.on('displayMessage', data => {
         totalMessages = data.totalMessages;
-        totalCountEl.textContent = totalMessages;
+        updateTotalMessagesDisplay();
         displayedHistory = data.history;
         startDisplay(data.message);
     });
     socket.on('queueUpdate', (data) => {
         totalMessages = data.totalMessages;
-        totalCountEl.textContent = totalMessages;
+        updateTotalMessagesDisplay();
         queueCountSpan.textContent = data.count;
         queueCounterDiv.classList.toggle('hidden', data.count === 0);
 
@@ -269,6 +269,15 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => speakBtn.classList.remove('speaking'), 1000);
         }
     });
+
+    // --- Função para atualizar display de mensagens com singular/plural correto ---
+    const updateTotalMessagesDisplay = () => {
+        if (totalMessages === 1) {
+            totalCountEl.textContent = `${totalMessages} mensagem enviada`;
+        } else {
+            totalCountEl.textContent = `${totalMessages} mensagens enviadas`;
+        }
+    };
 
     // --- Funções Auxiliares (QR Code, Font Size) ---
     const generateQRCode = () => {
