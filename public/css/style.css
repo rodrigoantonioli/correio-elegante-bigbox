@@ -306,22 +306,37 @@ body.display-page {
     object-fit: contain;
     filter: drop-shadow(0 0 20px black) drop-shadow(0 0 5px black);
 }
+
+/* Estilos para logos inline */
+.inline-logo {
+    height: 50px;
+    vertical-align: middle;
+}
+
+/* Estilos para mensagens de erro e texto centralizado */
+.error-message {
+    color: red;
+}
+
+.text-center {
+    text-align: center;
+}
 .display-page #incentive-phrase {
     font-family: 'Lilita One', cursive;
     font-size: clamp(1.5rem, 4vw, 2.5rem);
     text-shadow: 0px 0px 10px black, 0px 0px 5px black;
     animation: pulse 2s infinite ease-in-out;
     background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
     padding: 15px 25px;
     border-radius: 15px;
     border: 2px solid rgba(255, 255, 255, 0.2);
 }
 .display-page #total-messages-counter {
     background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     padding: 10px 20px;
     border-radius: 50px;
     font-size: clamp(1rem, 2.5vw, 1.5rem);
@@ -603,8 +618,8 @@ body.display-page {
     text-shadow: 0 0 8px #000, 0 0 3px #000;
     margin: 0;
     background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
     padding: 8px 16px;
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.2);

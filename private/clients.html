@@ -102,7 +102,7 @@
 <body>
     <div class="container">
         <header>
-            <h1><img src="/images/logo.png" alt="Big Arraiá Ultra Bão" style="height: 50px; vertical-align: middle;"> Monitor de Clientes</h1>
+            <h1><img src="/images/logo.png" alt="Big Arraiá Ultra Bão" class="inline-logo"> Monitor de Clientes</h1>
         </header>
 
         <nav class="admin-nav">
@@ -172,7 +172,7 @@
                 clientsCount.textContent = clients.length;
 
                 if (clients.length === 0) {
-                    clientsList.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum cliente conectado.</td></tr>';
+                    clientsList.innerHTML = '<tr><td colspan="5" class="text-center">Nenhum cliente conectado.</td></tr>';
                 } else {
                     clients.forEach(client => {
                         const row = document.createElement('tr');
@@ -202,7 +202,7 @@
                 blockedCount.textContent = blocked.length;
 
                 if (blocked.length === 0) {
-                    blockedIpsList.innerHTML = '<tr><td colspan="2" style="text-align:center;">Nenhum IP bloqueado.</td></tr>';
+                    blockedIpsList.innerHTML = '<tr><td colspan="2" class="text-center">Nenhum IP bloqueado.</td></tr>';
                 } else {
                     blocked.forEach(ip => {
                         const row = document.createElement('tr');
