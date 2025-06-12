@@ -260,13 +260,30 @@ const processQueue = () => {
     }
 };
 
+// Função para mapear páginas para nomes amigáveis
+const getPageDisplayName = (page) => {
+    const pageMap = {
+        '/': 'Envio de Mensagens',
+        '/display': 'Telão',
+        '/admin': 'Administração',
+        '/history': 'Histórico',
+        '/clients': 'Monitor de Clientes',
+        '/stats': 'Estatísticas',
+        '/login': 'Login',
+        'clients_admin': 'Monitor de Clientes',
+        'stats_admin': 'Estatísticas',
+        'Desconhecida': 'Conectando...'
+    };
+    return pageMap[page] || page;
+};
+
 // Função para enviar a lista de clientes atualizada para o admin de clientes
 const updateClientsAdmin = () => {
     const clientsData = Object.values(connectedClients).map(client => {
         const ua = useragent.parse(client.userAgent || '');
         return {
             ip: client.ip,
-            page: client.page,
+            page: getPageDisplayName(client.page),
             device: ua.isMobile ? 'Celular' : (ua.isDesktop ? 'Computador' : 'Outro'),
             connectedAt: client.connectedAt
         };

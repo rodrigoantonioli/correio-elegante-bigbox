@@ -123,6 +123,7 @@
                             <th>Dispositivo</th>
                             <th>Página Atual</th>
                             <th>Tempo Conectado</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="clients-list">
@@ -132,18 +133,22 @@
             </div>
         </section>
 
-        <h2 style="margin-top: 2rem;">IPs Bloqueados</h2>
-        <table id="blocked-ips-table">
-            <thead>
-                <tr>
-                    <th>Endereço IP</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Linhas serão inseridas dinamicamente -->
-            </tbody>
-        </table>
+        <section class="admin-section">
+            <h2>IPs Bloqueados (<span id="blocked-count">0</span>)</h2>
+            <div class="table-container">
+                <table class="clients-table">
+                    <thead>
+                        <tr>
+                            <th>Endereço IP</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="blocked-ips-list">
+                        <!-- IPs bloqueados serão listados aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -152,36 +157,65 @@
             const socket = io();
             const clientsList = document.getElementById('clients-list');
             const clientsCount = document.getElementById('clients-count');
+            const blockedIpsList = document.getElementById('blocked-ips-list');
+            const blockedCount = document.getElementById('blocked-count');
 
             socket.on('connect', () => {
                 socket.emit('join_clients_admin');
             });
 
             socket.on('clientsUpdate', (data) => {
-                clientsList.innerHTML = ''; // Limpa a lista
+                // Atualiza lista de clientes conectados
+                clientsList.innerHTML = '';
                 const clients = data.clients || [];
                 clientsCount.textContent = clients.length;
 
                 if (clients.length === 0) {
-                    clientsList.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhum cliente conectado.</td></tr>';
-                    return;
+                    clientsList.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum cliente conectado.</td></tr>';
+                } else {
+                    clients.forEach(client => {
+                        const row = document.createElement('tr');
+                        
+                        const timeConnected = client.connectedAt ? 
+                            formatDuration((new Date() - new Date(client.connectedAt)) / 1000) : 
+                            'N/A';
+                        
+                        row.innerHTML = `
+                            <td>${client.ip}</td>
+                            <td>${client.device || 'Desconhecido'}</td>
+                            <td><span class="page-badge">${client.page}</span></td>
+                            <td>${timeConnected}</td>
+                            <td>
+                                <button class="block-btn" onclick="blockIp('${client.ip}')">
+                                    🚫 Bloquear
+                                </button>
+                            </td>
+                        `;
+                        clientsList.appendChild(row);
+                    });
                 }
-                
-                clients.forEach(client => {
-                    const row = document.createElement('tr');
-                    
-                    const timeConnected = client.connectedAt ? 
-                        formatDuration((new Date() - new Date(client.connectedAt)) / 1000) : 
-                        'N/A';
-                    
-                    row.innerHTML = `
-                        <td>${client.ip}</td>
-                        <td>${client.device || 'Desconhecido'}</td>
-                        <td><span class="page-badge">${client.page}</span></td>
-                        <td>${timeConnected}</td>
-                    `;
-                    clientsList.appendChild(row);
-                });
+
+                // Atualiza lista de IPs bloqueados
+                blockedIpsList.innerHTML = '';
+                const blocked = data.blocked || [];
+                blockedCount.textContent = blocked.length;
+
+                if (blocked.length === 0) {
+                    blockedIpsList.innerHTML = '<tr><td colspan="2" style="text-align:center;">Nenhum IP bloqueado.</td></tr>';
+                } else {
+                    blocked.forEach(ip => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${ip}</td>
+                            <td>
+                                <button class="unblock-btn" onclick="unblockIp('${ip}')">
+                                    ✅ Desbloquear
+                                </button>
+                            </td>
+                        `;
+                        blockedIpsList.appendChild(row);
+                    });
+                }
             });
             
             // Função para formatar segundos em uma string de tempo legível
@@ -190,6 +224,19 @@
                 if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${Math.floor(seconds % 60)}s`;
                 return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
             }
+
+            // Funções globais para bloquear/desbloquear IPs
+            window.blockIp = (ip) => {
+                if (confirm(`Tem certeza que deseja bloquear o IP ${ip}? O usuário será desconectado imediatamente.`)) {
+                    socket.emit('blockIp', ip);
+                }
+            };
+
+            window.unblockIp = (ip) => {
+                if (confirm(`Tem certeza que deseja desbloquear o IP ${ip}?`)) {
+                    socket.emit('unblockIp', ip);
+                }
+            };
 
             // Atualiza o tempo de conexão a cada segundo
             setInterval(() => {
