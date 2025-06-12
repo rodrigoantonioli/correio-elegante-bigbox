@@ -343,6 +343,9 @@ const updateStatsAdmin = () => {
         stats.totalMessages = 0;
     }
 
+    // Adiciona o número atual de clientes conectados
+    stats.currentClients = Object.keys(connectedClients).length;
+
     io.to('stats_admin_room').emit('statsUpdate', stats);
 };
 
