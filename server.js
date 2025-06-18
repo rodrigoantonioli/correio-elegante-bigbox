@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const fs = require('fs');
+const fsPromises = fs.promises;
 const path = require('path');
 const cookieSession = require('cookie-session');
 const useragent = require('express-useragent');
@@ -209,22 +210,20 @@ const appendToLogFile = (message) => {
 };
 
 // Função para ler as mensagens prontas do arquivo
-const readPredefinedMessages = () => {
+const readPredefinedMessages = async () => {
     try {
-        if (fs.existsSync(messagesFilePath)) {
-            const data = fs.readFileSync(messagesFilePath, 'utf8');
-            // Adiciona um try-catch interno para o parse, caso o arquivo esteja corrompido
-            try {
-                return JSON.parse(data);
-            } catch (parseError) {
-                console.error('Erro ao fazer parse de messages.json:', parseError);
-                // Se o parse falhar, retorna as mensagens padrão para não quebrar o servidor
-            }
+        const data = await fsPromises.readFile(messagesFilePath, 'utf8');
+        try {
+            return JSON.parse(data);
+        } catch (parseError) {
+            console.error('Erro ao fazer parse de messages.json:', parseError);
         }
     } catch (readError) {
-        console.error('Erro ao ler messages.json:', readError);
+        if (readError.code !== 'ENOENT') {
+            console.error('Erro ao ler messages.json:', readError);
+        }
     }
-    // Retorna mensagens padrão se o arquivo não existir ou derro
+    // Retorna mensagens padrão se o arquivo não existir ou der erro
     return [
         "Sua beleza é como um bug no meu coração, impossível de ignorar!",
         "Se beleza desse cadeia, você pegaria prisão perpétua.",
@@ -234,7 +233,11 @@ const readPredefinedMessages = () => {
     ];
 };
 
-let predefinedMessages = readPredefinedMessages();
+let predefinedMessages = [];
+
+(async () => {
+    predefinedMessages = await readPredefinedMessages();
+})();
 
 // Função para processar a fila de mensagens
 const processQueue = () => {
@@ -298,9 +301,9 @@ const updateClientsAdmin = () => {
 };
 
 // Função para enviar as estatísticas atualizadas
-const updateStatsAdmin = () => {
+const updateStatsAdmin = async () => {
     try {
-        const data = fs.readFileSync(logFilePath, 'utf8');
+        const data = await fsPromises.readFile(logFilePath, 'utf8');
         const lines = data.split('\n').filter(Boolean);
         
         // Calcular mensagens populares
@@ -502,10 +505,10 @@ io.on('connection', (socket) => {
         socket.emit('updateMessages', predefinedMessages);
     });
 
-    socket.on('updateMessages', (newMessages) => {
+    socket.on('updateMessages', async (newMessages) => {
         predefinedMessages = newMessages;
         try {
-            fs.writeFileSync(messagesFilePath, JSON.stringify(newMessages, null, 2));
+            await fsPromises.writeFile(messagesFilePath, JSON.stringify(newMessages, null, 2));
             console.log('Mensagens prontas atualizadas e salvas.');
             io.emit('updateMessages', predefinedMessages); // Envia para todos os clientes
         } catch (error) {
