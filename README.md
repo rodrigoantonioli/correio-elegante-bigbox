@@ -23,6 +23,7 @@ Projeto completo de um sistema de Correio Elegante para festas e eventos, com en
 - **Backend:** Node.js, Express.js
 - **Comunicação Real-time:** Socket.IO
 - **Autenticação:** `cookie-session` para sessões de administrador.
+- **Segurança:** `helmet` para configurar cabeçalhos HTTP padrão.
 - **Frontend:** HTML5, CSS3, JavaScript (puro)
 - **Geração de QR Code:** `qrcode` (via CDN)
 - **Versionamento:** Git & GitHub
