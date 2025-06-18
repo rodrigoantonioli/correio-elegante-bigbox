@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const cookieSession = require('cookie-session');
 const useragent = require('express-useragent');
+const helmet = require('helmet');
 
 const app = express();
 const server = http.createServer(app);
@@ -18,8 +19,12 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'mude-esta-chave-secreta-de
 app.use(cookieSession({
     name: 'session',
     keys: [SESSION_SECRET],
-    maxAge: 24 * 60 * 60 * 1000 // 24 horas
+    maxAge: 24 * 60 * 60 * 1000, // 24 horas
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production'
 }));
+
+app.use(helmet());
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
