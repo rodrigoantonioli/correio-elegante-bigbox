@@ -13,8 +13,13 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'bigbox';
-const SESSION_SECRET = process.env.SESSION_SECRET || 'mude-esta-chave-secreta-depois';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const SESSION_SECRET = process.env.SESSION_SECRET;
+
+if (!ADMIN_PASSWORD || !SESSION_SECRET) {
+    console.error('Error: ADMIN_PASSWORD and SESSION_SECRET must be set in the environment.');
+    process.exit(1);
+}
 
 // Configuração da Sessão
 app.use(cookieSession({
