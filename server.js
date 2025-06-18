@@ -35,6 +35,9 @@ app.use(useragent.express()); // Usar o middleware user-agent
 let messageQueue = [];
 let isDisplayBusy = false;
 let messageLog = [];
+// Mantém apenas as últimas N mensagens em memória para enviar aos clientes.
+// O histórico completo continua salvo em "message_history.log".
+const MAX_LOG_SIZE = parseInt(process.env.MAX_LOG_SIZE, 10) || 100;
 let connectedClients = {}; // Para rastrear clientes
 let blockedIps = new Set(); // Para armazenar IPs bloqueados
 let displayedMessagesLog = []; // Histórico para o carrossel
@@ -485,6 +488,10 @@ io.on('connection', (socket) => {
         };
         messageQueue.push(fullMessage);
         messageLog.push(fullMessage);
+        // Garante que apenas as últimas MAX_LOG_SIZE mensagens permaneçam em memória
+        while (messageLog.length > MAX_LOG_SIZE) {
+            messageLog.shift();
+        }
         appendToLogFile(fullMessage);
         
         // Notifica que uma NOVA mensagem chegou e atualiza a contagem
