@@ -83,4 +83,9 @@ Para que todos na festa possam acessar, o ideal é publicar o projeto na interne
 
 1. **Acesse o link do telão no projetor:** `https://SEU_LINK.onrender.com/display`
 2. **Coloque em tela cheia (F11)** e clique em "Iniciar Telão".
-3. O QR Code que aparecerá na tela já estará apontando para o seu site. Basta os convidados escanearem para começar a enviar as mensagens! 
+3. O QR Code que aparecerá na tela já estará apontando para o seu site. Basta os convidados escanearem para começar a enviar as mensagens!
+
+## 📜 Retenção de Mensagens
+
+O servidor guarda em memória apenas as últimas **100** mensagens (ou o valor definido na variável de ambiente `MAX_LOG_SIZE`).
+O histórico completo é salvo continuamente no arquivo `message_history.log` e pode ser acessado na página `/history`.
