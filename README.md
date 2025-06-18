@@ -34,6 +34,7 @@ Projeto completo de um sistema de Correio Elegante para festas e eventos, com en
 ### Pré-requisitos
 - [Node.js](https://nodejs.org/) (versão 16 ou superior)
 - `npm` (instalado com o Node.js)
+- Definir as variáveis `ADMIN_PASSWORD` e `SESSION_SECRET` antes de iniciar
 
 ### Passos
 1. **Clone o repositório:**
@@ -45,11 +46,16 @@ Projeto completo de um sistema de Correio Elegante para festas e eventos, com en
    ```bash
    npm install
    ```
-3. **Inicie o servidor:**
+3. **Defina as variáveis de ambiente obrigatórias:**
+   ```bash
+   export ADMIN_PASSWORD=sua_senha
+   export SESSION_SECRET=uma_frase_secreta
+   ```
+4. **Inicie o servidor:**
    ```bash
    npm start
    ```
-4. **Acesse as páginas no seu navegador:**
+5. **Acesse as páginas no seu navegador:**
    - **Envio de Mensagens:** `http://localhost:3000`
    - **Telão:** `http://localhost:3000/display`
    - **Administração:** `http://localhost:3000/admin` (será redirecionado para o login)
