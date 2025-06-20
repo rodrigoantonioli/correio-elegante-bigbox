@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let carouselIndex = -1;
     let carouselTimeout;
     let currentMessageTimeout;
+    let minDisplayTimeout; // Novo temporizador para o tempo mínimo
     let messageStartTime = null;
     const MIN_DISPLAY_TIME = 20000; // 20 segundos
     const MAX_DISPLAY_TIME = 60000; // 1 minuto
@@ -196,21 +197,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const fullText = `Correio Elegante para ${msg.recipient}. A mensagem é: ${msg.message}. Enviado por: ${msg.sender}.`;
         speakMessage(fullText);
+        
         messageStartTime = Date.now();
         log(`Iniciando exibição da mensagem ID ${msg.id}. Duração máxima: ${duration || MAX_DISPLAY_TIME}ms.`);
         
         const displayDuration = duration !== undefined ? duration : MAX_DISPLAY_TIME;
+        
+        // Limpa temporizadores anteriores para segurança
+        clearTimeout(currentMessageTimeout);
+        clearTimeout(minDisplayTimeout);
+
+        // Define os dois temporizadores
         currentMessageTimeout = setTimeout(finishDisplay, displayDuration);
+        minDisplayTimeout = setTimeout(checkQueueForInterruption, MIN_DISPLAY_TIME);
     };
 
     const finishDisplay = () => {
         log(`Finalizando exibição. Notificando o servidor.`);
-        console.log('Tempo de exibição terminou. Notificando o servidor que estou pronto.');
+        
+        // Limpa AMBOS os temporizadores
         clearTimeout(currentMessageTimeout);
+        clearTimeout(minDisplayTimeout);
+        
         currentMessageTimeout = null;
+        minDisplayTimeout = null;
         messageStartTime = null;
-        // Apenas notifica o servidor. Não altera a UI.
+        
         socket.emit('messageDisplayed');
+    };
+
+    // Nova função para verificar a fila após o tempo mínimo
+    const checkQueueForInterruption = () => {
+        log('Temporizador de 20s disparou. Verificando a fila.');
+        const currentQueueCount = parseInt(queueCountSpan.textContent, 10) || 0;
+        
+        if (currentQueueCount > 0) {
+            log(`✅ Fila tem ${currentQueueCount} item(s). Interrompendo exibição para avançar a fila.`);
+            finishDisplay();
+        } else {
+            log('❌ Fila vazia. Mensagem continuará em exibição.');
+        }
     };
 
     // --- Listeners de Socket ---
