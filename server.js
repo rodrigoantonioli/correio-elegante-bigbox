@@ -13,12 +13,17 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-const SESSION_SECRET = process.env.SESSION_SECRET;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'bigbox';
+const SESSION_SECRET = process.env.SESSION_SECRET || 'mude-esta-chave-secreta-depois';
 
-if (!ADMIN_PASSWORD || !SESSION_SECRET) {
-    console.error('Error: ADMIN_PASSWORD and SESSION_SECRET must be set in the environment.');
-    process.exit(1);
+// Aviso se estiver usando valores padrão em produção
+if (process.env.NODE_ENV === 'production') {
+    if (!process.env.ADMIN_PASSWORD) {
+        console.warn('⚠️  AVISO: Usando senha padrão em produção. Defina ADMIN_PASSWORD como variável de ambiente.');
+    }
+    if (!process.env.SESSION_SECRET) {
+        console.warn('⚠️  AVISO: Usando chave de sessão padrão em produção. Defina SESSION_SECRET como variável de ambiente.');
+    }
 }
 
 // Configuração da Sessão
