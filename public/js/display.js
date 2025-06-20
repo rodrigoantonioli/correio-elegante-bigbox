@@ -79,12 +79,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Gerenciamento de Estado da Tela ---
     const setScreenState = (state) => {
         if (state === 'waiting') {
+            console.log('Transicionando para o estado de ESPERA.');
             waitingScreen.classList.remove('hidden');
             messageScreen.classList.add('hidden');
+            displayWrapper.classList.add('hidden');
+            if (currentMode === 'ticker') tickerContent.classList.remove('animate');
             startIncentiveCycle();
         } else { // 'message'
+            console.log('Transicionando para o estado de MENSAGEM.');
             waitingScreen.classList.add('hidden');
             messageScreen.classList.remove('hidden');
+            displayWrapper.classList.remove('hidden');
             stopIncentiveCycle();
         }
     };
@@ -170,8 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const startDisplay = (msg, duration) => {
-        setScreenState('message');
-        displayWrapper.classList.remove('hidden');
+        setScreenState('message'); // Garante que a tela de mensagem esteja visível
 
         switch (currentMode) {
             case 'default':
@@ -194,15 +198,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const finishDisplay = () => {
-        displayWrapper.classList.add('hidden');
-        if (currentMode === 'ticker') tickerContent.classList.remove('animate');
-        
+        console.log('Tempo de exibição terminou. Notificando o servidor que estou pronto.');
         clearTimeout(currentMessageTimeout);
         currentMessageTimeout = null;
         messageStartTime = null;
-
-        setScreenState('waiting'); // Volta para a tela de espera
-        
+        // Apenas notifica o servidor. Não altera a UI.
         socket.emit('messageDisplayed');
     };
 
@@ -236,10 +236,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     socket.on('modeUpdate', newMode => switchMode(newMode));
     socket.on('displayMessage', data => {
-        totalMessages = data.totalMessages || 0; // Garante que seja um número
+        console.log('Recebida nova mensagem do servidor:', data.message.id);
+        totalMessages = data.totalMessages || 0;
         updateTotalMessagesDisplay();
         displayedHistory = data.history;
         startDisplay(data.message);
+    });
+    socket.on('enterWaitState', () => {
+        console.log('Recebida instrução do servidor para entrar em modo de espera.');
+        setScreenState('waiting');
     });
     socket.on('queueUpdate', (data) => {
         totalMessages = data.totalMessages || 0; // Garante que seja um número

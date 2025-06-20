@@ -270,28 +270,36 @@ let predefinedMessages = [];
 
 // Função para processar a fila de mensagens
 const processQueue = () => {
+    // Se há uma mensagem na fila e o telão está livre, envia a próxima.
     if (messageQueue.length > 0 && !isDisplayBusy) {
         isDisplayBusy = true;
         
         const nextMessage = messageQueue.shift();
         currentMessage = nextMessage; // Armazena a mensagem atual
 
-        // Adiciona ao histórico de exibidas ANTES de enviar
+        // Adiciona ao histórico de exibidas
         displayedMessagesLog.push(nextMessage);
-        // Mantém o histórico com um tamanho razoável, ex: últimas 50 mensagens
         if (displayedMessagesLog.length > 50) {
             displayedMessagesLog.shift();
         }
 
+        console.log(`Enviando nova mensagem para o telão. Fila agora com: ${messageQueue.length}`);
         io.emit('displayMessage', { 
             message: nextMessage, 
             history: displayedMessagesLog,
-            totalMessages: messageLog ? messageLog.length : 0 // Garante que seja um número
+            totalMessages: messageLog ? messageLog.length : 0
         });
+        
+        // Atualiza o contador da fila para todos os clientes
         io.emit('queueUpdate', { 
             count: messageQueue.length, 
-            totalMessages: messageLog ? messageLog.length : 0 // Garante que seja um número
-        }); // Atualiza o contador para todos após remover
+            totalMessages: messageLog ? messageLog.length : 0
+        });
+    } 
+    // Se a fila está vazia e o telão ficou livre, manda ele entrar em modo de espera.
+    else if (messageQueue.length === 0 && !isDisplayBusy) {
+        console.log("Fila vazia e telão livre. Instruindo para entrar em modo de espera.");
+        io.emit('enterWaitState');
     }
 };
 
@@ -541,9 +549,12 @@ io.on('connection', (socket) => {
     });
 
     socket.on('messageDisplayed', () => {
+        // Sinal do cliente de que está pronto para a próxima instrução
+        console.log('Telão informou que terminou de exibir a mensagem.');
         isDisplayBusy = false;
-        currentMessage = null; // Limpa a mensagem atual
-        console.log('Telão liberado. Processando próxima mensagem se houver.');
+        currentMessage = null; // Limpa a mensagem que estava sendo exibida
+        
+        // Com o telão livre, chama o processador da fila para decidir o próximo passo.
         processQueue();
     });
 
