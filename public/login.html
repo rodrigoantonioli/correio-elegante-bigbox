@@ -12,6 +12,9 @@
             <img src="/images/logo.png" alt="Big Arraiá Ultra Bão" class="logo">
             <h1>Login do Admin</h1>
             <p>Por favor, insira a senha para continuar.</p>
+            <div id="error-message" style="display: none; color: red; margin: 10px 0; font-weight: bold;">
+                ❌ Senha incorreta! Tente novamente.
+            </div>
         </header>
         <main>
             <form action="/login" method="POST">
@@ -23,5 +26,12 @@
             </form>
         </main>
     </div>
+    <script>
+        // Mostra erro se houver parâmetro error na URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('error')) {
+            document.getElementById('error-message').style.display = 'block';
+        }
+    </script>
 </body>
 </html> 

@@ -104,11 +104,21 @@ app.get('/login', (req, res) => {
 
 // Rota de Login
 app.post('/login', (req, res) => {
-    if (req.body.password === ADMIN_PASSWORD) {
+    const inputPassword = req.body.password;
+    console.log(`Tentativa de login:`);
+    console.log(`- Senha enviada: "${inputPassword}"`);
+    console.log(`- Senha esperada: "${ADMIN_PASSWORD}"`);
+    console.log(`- Senhas iguais: ${inputPassword === ADMIN_PASSWORD}`);
+    console.log(`- Tipo senha enviada: ${typeof inputPassword}`);
+    console.log(`- Tipo senha esperada: ${typeof ADMIN_PASSWORD}`);
+    
+    if (inputPassword === ADMIN_PASSWORD) {
+        console.log('✅ Login bem-sucedido!');
         req.session.isAdmin = true;
         res.redirect('/admin');
     } else {
-        res.redirect('/login');
+        console.log('❌ Login falhou - senha incorreta');
+        res.redirect('/login?error=1');
     }
 });
 

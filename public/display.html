@@ -8,20 +8,48 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
     <script>
-        // Fallback para carregar QRCode de CDN alternativo se necessário
-        window.addEventListener('load', function() {
-            if (typeof QRCode === 'undefined') {
-                console.warn('QRCode não carregado do CDN principal, tentando CDN alternativo...');
-                const script = document.createElement('script');
-                script.src = 'https://unpkg.com/qrcode@1.4.4/build/qrcode.min.js';
-                script.onload = function() {
-                    console.log('QRCode carregado do CDN alternativo');
-                };
-                script.onerror = function() {
-                    console.error('Falha ao carregar QRCode de ambos os CDNs');
-                };
-                document.head.appendChild(script);
+        // Sistema robusto de fallback para carregar QRCode
+        let qrCodeLoadAttempts = 0;
+        const maxAttempts = 3;
+        const cdnUrls = [
+            'https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js',
+            'https://unpkg.com/qrcode@1.4.4/build/qrcode.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/qrcode-js/1.0.0/qrcode.min.js'
+        ];
+        
+        function loadQRCodeLibrary(urlIndex = 0) {
+            if (typeof QRCode !== 'undefined') {
+                console.log('QRCode já carregado');
+                return;
             }
+            
+            if (urlIndex >= cdnUrls.length) {
+                console.error('Falha ao carregar QRCode de todos os CDNs');
+                return;
+            }
+            
+            console.log(`Tentando carregar QRCode do CDN ${urlIndex + 1}:`, cdnUrls[urlIndex]);
+            
+            const script = document.createElement('script');
+            script.src = cdnUrls[urlIndex];
+            script.onload = function() {
+                console.log(`QRCode carregado com sucesso do CDN ${urlIndex + 1}`);
+            };
+            script.onerror = function() {
+                console.warn(`Falha ao carregar do CDN ${urlIndex + 1}, tentando próximo...`);
+                loadQRCodeLibrary(urlIndex + 1);
+            };
+            document.head.appendChild(script);
+        }
+        
+        // Verifica se QRCode foi carregado após um tempo
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                if (typeof QRCode === 'undefined') {
+                    console.warn('QRCode não carregado, iniciando fallbacks...');
+                    loadQRCodeLibrary(1); // Começa do segundo CDN
+                }
+            }, 1000);
         });
     </script>
 </head>

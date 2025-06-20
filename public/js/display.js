@@ -312,7 +312,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Funções Auxiliares (QR Code, Font Size) ---
     const generateQRCode = () => {
-        const url = window.location.origin;
+        // Determina a URL correta baseada no ambiente
+        let url = window.location.origin;
+        
+        // Se estiver no Render, usa o endereço fixo
+        if (window.location.hostname.includes('onrender.com')) {
+            url = 'https://correio-elegante-bigbox.onrender.com';
+        }
+        
+        console.log(`Gerando QR Code para URL: ${url}`);
+        
         const qrCanvas = document.getElementById('qr-code');
         const qrCanvasSmall = document.getElementById('qr-code-small');
         const qrLoading = document.getElementById('qr-loading');
@@ -329,9 +338,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        let qrCodesGenerated = 0;
+        const totalQRCodes = 2;
+        
+        const checkComplete = () => {
+            qrCodesGenerated++;
+            if (qrCodesGenerated >= totalQRCodes && qrLoading) {
+                qrLoading.style.display = 'none';
+            }
+        };
+        
         // Verifica se os elementos existem antes de tentar gerar
         if (qrCanvas) {
             // Limpa o canvas antes de gerar
+            qrCanvas.width = 300;
+            qrCanvas.height = 300;
             const ctx = qrCanvas.getContext('2d');
             ctx.clearRect(0, 0, qrCanvas.width, qrCanvas.height);
             
@@ -341,7 +362,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 color: {
                     dark: '#000000',
                     light: '#FFFFFF'
-                }
+                },
+                errorCorrectionLevel: 'M'
             }, (e) => { 
                 if(e) {
                     console.error('Erro ao gerar QR Code grande:', e);
@@ -349,18 +371,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => generateQRCode(), 2000);
                 } else {
                     console.log('QR Code grande gerado com sucesso');
-                    // Esconde mensagem de carregamento
-                    if (qrLoading) {
-                        qrLoading.style.display = 'none';
-                    }
+                    checkComplete();
                 }
             });
         } else {
             console.warn('Elemento qr-code não encontrado');
+            checkComplete();
         }
         
         if (qrCanvasSmall) {
             // Limpa o canvas antes de gerar
+            qrCanvasSmall.width = 180;
+            qrCanvasSmall.height = 180;
             const ctx = qrCanvasSmall.getContext('2d');
             ctx.clearRect(0, 0, qrCanvasSmall.width, qrCanvasSmall.height);
             
@@ -370,16 +392,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 color: {
                     dark: '#000000',
                     light: '#FFFFFF'
-                }
+                },
+                errorCorrectionLevel: 'M'
             }, (e) => { 
                 if(e) {
                     console.error('Erro ao gerar QR Code pequeno:', e);
                 } else {
                     console.log('QR Code pequeno gerado com sucesso');
                 }
+                checkComplete();
             });
         } else {
             console.warn('Elemento qr-code-small não encontrado');
+            checkComplete();
         }
     };
     const adjustFontSize = (element, messageText) => {
