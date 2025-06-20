@@ -532,19 +532,21 @@ io.on('connection', (socket) => {
         }
         appendToLogFile(fullMessage);
         
-        // Notifica que uma NOVA mensagem chegou e atualiza a contagem
+        // Notifica todos sobre a atualização da fila. O cliente de display usará isso para
+        // mostrar o contador, e o cliente de admin para mostrar a fila atualizada.
         io.emit('queueUpdate', { 
             count: messageQueue.length, 
             new: true, 
-            totalMessages: messageLog ? messageLog.length : 0 // Garante que seja um número
+            totalMessages: messageLog ? messageLog.length : 0
         });
 
         // Se o telão estiver ocupado, comanda a interrupção para acelerar a fila
         if (isDisplayBusy) {
+            console.log("Telão está ocupado. Enviando comando de interrupção.");
             io.emit('interruptDisplay');
         }
 
-        io.emit('messageLog', messageLog);
+        // Tenta processar a fila. Se o telão não estiver ocupado, a mensagem será exibida imediatamente.
         processQueue();
     });
 

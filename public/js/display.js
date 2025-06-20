@@ -247,24 +247,27 @@ document.addEventListener('DOMContentLoaded', () => {
         setScreenState('waiting');
     });
     socket.on('queueUpdate', (data) => {
-        totalMessages = data.totalMessages || 0; // Garante que seja um número
+        totalMessages = data.totalMessages || 0;
         updateTotalMessagesDisplay();
         queueCountSpan.textContent = data.count;
         queueCounterDiv.classList.toggle('hidden', data.count === 0);
-
-        // Lógica para interromper a mensagem atual se uma nova entrar na fila
-        if (data.count > 0 && messageStartTime) {
-            const elapsedTime = Date.now() - messageStartTime;
-            if (elapsedTime >= MIN_DISPLAY_TIME) {
-                console.log('Fila com nova mensagem e tempo mínimo atingido. Exibindo a próxima.');
-                finishDisplay();
-            }
-        }
 
         if (data.new && data.count > 0) {
             notificationSound.play();
             queueCounterDiv.classList.add('new-message');
             setTimeout(() => queueCounterDiv.classList.remove('new-message'), 300);
+        }
+    });
+    socket.on('interruptDisplay', () => {
+        console.log('Recebida instrução de interrupção do servidor.');
+        if (messageStartTime) {
+            const elapsedTime = Date.now() - messageStartTime;
+            if (elapsedTime >= MIN_DISPLAY_TIME) {
+                console.log('Tempo mínimo de exibição atingido. Interrompendo para exibir a próxima.');
+                finishDisplay();
+            } else {
+                console.log(`Ainda dentro do tempo mínimo de exibição. ${MIN_DISPLAY_TIME - elapsedTime}ms restantes.`);
+            }
         }
     });
 
