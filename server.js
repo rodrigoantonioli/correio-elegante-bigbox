@@ -67,6 +67,10 @@ const stats = {
 const logFilePath = path.join(__dirname, 'message_history.log');
 const messagesFilePath = path.join(__dirname, 'messages.json');
 
+const log = (message) => {
+    console.log(`[${new Date().toISOString()}] SERVIDOR: ${message}`);
+};
+
 // Middleware de autenticação
 const checkAuth = (req, res, next) => {
     if (req.session.isAdmin) {
@@ -106,7 +110,7 @@ app.get('/login', (req, res) => {
 // Rota de Login
 app.post('/login', (req, res) => {
     const inputPassword = req.body.password;
-    console.log(`Tentativa de login:`);
+    log(`Tentativa de login com senha: "${inputPassword}"`);
     console.log(`- Senha enviada: "${inputPassword}"`);
     console.log(`- Senha esperada: "${ADMIN_PASSWORD}"`);
     console.log(`- Senhas iguais: ${inputPassword === ADMIN_PASSWORD}`);
@@ -114,7 +118,7 @@ app.post('/login', (req, res) => {
     console.log(`- Tipo senha esperada: ${typeof ADMIN_PASSWORD}`);
     
     if (inputPassword === ADMIN_PASSWORD) {
-        console.log('✅ Login bem-sucedido!');
+        log('✅ Login bem-sucedido!');
         req.session.isAdmin = true;
         res.redirect('/admin');
     } else {
@@ -270,12 +274,10 @@ let predefinedMessages = [];
 
 // Função para processar a fila de mensagens
 const processQueue = () => {
-    // Se há uma mensagem na fila e o telão está livre, envia a próxima.
     if (messageQueue.length > 0 && !isDisplayBusy) {
         isDisplayBusy = true;
-        
         const nextMessage = messageQueue.shift();
-        currentMessage = nextMessage; // Armazena a mensagem atual
+        currentMessage = nextMessage;
 
         // Adiciona ao histórico de exibidas
         displayedMessagesLog.push(nextMessage);
@@ -283,7 +285,7 @@ const processQueue = () => {
             displayedMessagesLog.shift();
         }
 
-        console.log(`Enviando nova mensagem para o telão. Fila agora com: ${messageQueue.length}`);
+        log(`Enviando nova mensagem para o telão (ID: ${nextMessage.id}). Fila agora com: ${messageQueue.length}`);
         io.emit('displayMessage', { 
             message: nextMessage, 
             history: displayedMessagesLog,
@@ -295,10 +297,8 @@ const processQueue = () => {
             count: messageQueue.length, 
             totalMessages: messageLog ? messageLog.length : 0
         });
-    } 
-    // Se a fila está vazia e o telão ficou livre, manda ele entrar em modo de espera.
-    else if (messageQueue.length === 0 && !isDisplayBusy) {
-        console.log("Fila vazia e telão livre. Instruindo para entrar em modo de espera.");
+    } else if (messageQueue.length === 0 && !isDisplayBusy) {
+        log("Fila vazia e telão livre. Instruindo para entrar em modo de espera.");
         io.emit('enterWaitState');
     }
 };
@@ -406,7 +406,7 @@ io.on('connection', (socket) => {
         return socket.disconnect();
     }
     
-    console.log(`Um cliente se conectou com o IP: ${ip}`);
+    log(`Um cliente se conectou com o IP: ${ip}`);
 
     // Registro inicial do cliente (será atualizado pelo evento 'register')
     connectedClients[socket.id] = {
@@ -509,14 +509,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('newMessage', (msg) => {
-        console.log('Nova mensagem recebida:', msg);
+        log(`Nova mensagem recebida de "${msg.sender}" para "${msg.recipient}".`);
 
-        // Verifica se a mensagem é uma das predefinidas
-        if (predefinedMessages.includes(msg.message)) {
-            stats.predefinedMessageCounts[msg.message] = (stats.predefinedMessageCounts[msg.message] || 0) + 1;
-        }
-
-        // A obtenção de IP já foi feita na conexão
         const fullMessage = { 
             ...msg, 
             id: Date.now(), 
@@ -524,39 +518,31 @@ io.on('connection', (socket) => {
             ip: ip,
             userAgent: socket.handshake.headers['user-agent'] || 'N/A'
         };
+        
         messageQueue.push(fullMessage);
         messageLog.push(fullMessage);
-        // Garante que apenas as últimas MAX_LOG_SIZE mensagens permaneçam em memória
-        while (messageLog.length > MAX_LOG_SIZE) {
-            messageLog.shift();
-        }
         appendToLogFile(fullMessage);
-        
-        // Notifica todos sobre a atualização da fila. O cliente de display usará isso para
-        // mostrar o contador, e o cliente de admin para mostrar a fila atualizada.
+        log(`Mensagem adicionada à fila. Fila agora com: ${messageQueue.length} item(s).`);
+
         io.emit('queueUpdate', { 
             count: messageQueue.length, 
             new: true, 
-            totalMessages: messageLog ? messageLog.length : 0
+            totalMessages: messageLog.length 
         });
 
-        // Se o telão estiver ocupado, comanda a interrupção para acelerar a fila
         if (isDisplayBusy) {
-            console.log("Telão está ocupado. Enviando comando de interrupção.");
+            log("Telão está ocupado. Enviando comando de interrupção.");
             io.emit('interruptDisplay');
         }
 
-        // Tenta processar a fila. Se o telão não estiver ocupado, a mensagem será exibida imediatamente.
+        // Processa a fila DEPOIS de todas as outras operações.
         processQueue();
     });
 
     socket.on('messageDisplayed', () => {
-        // Sinal do cliente de que está pronto para a próxima instrução
-        console.log('Telão informou que terminou de exibir a mensagem.');
+        log(`Telão (ID do Socket: ${socket.id}) informou que terminou de exibir a mensagem.`);
         isDisplayBusy = false;
-        currentMessage = null; // Limpa a mensagem que estava sendo exibida
-        
-        // Com o telão livre, chama o processador da fila para decidir o próximo passo.
+        currentMessage = null;
         processQueue();
     });
 
