@@ -9,6 +9,7 @@ const useragent = require('express-useragent');
 const helmet = require('helmet');
 
 const app = express();
+app.set('trust proxy', 1); // Confia no proxy reverso (essencial para o Render)
 const server = http.createServer(app);
 const io = socketIo(server);
 
@@ -192,7 +193,7 @@ app.post('/clear-log', checkAuth, (req, res) => {
 // Rota de Logout
 app.get('/logout', (req, res) => {
     req.session = null; // Destrói a sessão
-    res.redirect('/login');
+    res.redirect('/login?logout=1');
 });
 
 // Função para salvar uma mensagem no arquivo de log
