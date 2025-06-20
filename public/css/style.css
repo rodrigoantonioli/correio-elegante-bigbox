@@ -571,7 +571,31 @@ body.display-page {
 
 @media (max-width: 768px) {
     body { padding: 10px; }
-    .container { padding: 20px; }
+    .container { 
+        padding: 15px 20px; /* Reduzido */
+    }
+
+    header {
+        margin-bottom: 15px; /* Reduzido */
+        gap: 8px; /* Reduzido */
+    }
+    
+    header .logo {
+        width: 50%; /* Reduzido */
+        max-width: 180px;
+    }
+
+    header h1 {
+        font-size: 2rem; /* Reduzido */
+    }
+
+    .form-group {
+        margin-bottom: 12px; /* Reduzido */
+    }
+    
+    label {
+        margin-bottom: 3px; /* Reduzido */
+    }
 
     .display-page #message-screen {
         flex-direction: column;
