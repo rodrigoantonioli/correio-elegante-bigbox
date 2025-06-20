@@ -7,6 +7,23 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+    <script>
+        // Fallback para carregar QRCode de CDN alternativo se necessário
+        window.addEventListener('load', function() {
+            if (typeof QRCode === 'undefined') {
+                console.warn('QRCode não carregado do CDN principal, tentando CDN alternativo...');
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/qrcode@1.4.4/build/qrcode.min.js';
+                script.onload = function() {
+                    console.log('QRCode carregado do CDN alternativo');
+                };
+                script.onerror = function() {
+                    console.error('Falha ao carregar QRCode de ambos os CDNs');
+                };
+                document.head.appendChild(script);
+            }
+        });
+    </script>
 </head>
 <body class="display-page">
     <div id="start-overlay">
@@ -20,7 +37,12 @@
         <div id="waiting-screen">
             <img src="/images/logo.png" alt="Big Arraiá Ultra Bão" class="logo">
             <h2 id="incentive-phrase">Sua mensagem pode ser a próxima!</h2>
-            <canvas id="qr-code"></canvas>
+            <div id="qr-container">
+                <canvas id="qr-code"></canvas>
+                <div id="qr-loading" style="display: none; color: white; font-size: 1.2rem; margin: 20px;">
+                    🔄 Carregando QR Code...
+                </div>
+            </div>
             <p>Aponte a câmera do seu celular para enviar!</p>
             <div id="total-messages-counter">
                 🎉 <span id="total-count">0 mensagens enviadas</span>! 🎉
