@@ -304,9 +304,15 @@ const enterWaitState = () => {
     log("Iniciando modo de espera.");
     io.emit('enterWaitState');
 
-    // Após 1 minuto na espera, vai para o modo de memórias
     clearTimeout(idleLoopTimeout);
-    idleLoopTimeout = setTimeout(enterHistoryMode, 60000); // 1 minuto
+    
+    // Só inicia o ciclo para o modo de memórias se já tivermos mensagens no histórico.
+    if (displayedMessagesLog.length > 0) {
+        log(`Histórico com ${displayedMessagesLog.length} mensagem(ns). Agendando modo de memórias em 1 minuto.`);
+        idleLoopTimeout = setTimeout(enterHistoryMode, 60000); // 1 minuto
+    } else {
+        log("Histórico vazio. O modo de memórias não será ativado até que a primeira mensagem seja exibida.");
+    }
 };
 
 const processQueue = () => {
