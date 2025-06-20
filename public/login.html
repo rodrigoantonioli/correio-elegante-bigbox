@@ -15,6 +15,9 @@
             <div id="error-message" style="display: none; color: red; margin: 10px 0; font-weight: bold;">
                 ❌ Senha incorreta! Tente novamente.
             </div>
+            <div id="logout-message" style="display: none; color: green; margin: 10px 0; font-weight: bold;">
+                ✅ Logout realizado com sucesso!
+            </div>
         </header>
         <main>
             <form action="/login" method="POST">
@@ -31,6 +34,9 @@
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('error')) {
             document.getElementById('error-message').style.display = 'block';
+        }
+        if (urlParams.get('logout')) {
+            document.getElementById('logout-message').style.display = 'block';
         }
     </script>
 </body>
