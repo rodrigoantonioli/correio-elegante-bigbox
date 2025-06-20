@@ -2,24 +2,35 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const fs = require('fs');
+const fsPromises = fs.promises;
 const path = require('path');
 const cookieSession = require('cookie-session');
 const useragent = require('express-useragent');
+const helmet = require('helmet');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'bigbox';
-const SESSION_SECRET = process.env.SESSION_SECRET || 'mude-esta-chave-secreta-depois';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const SESSION_SECRET = process.env.SESSION_SECRET;
+
+if (!ADMIN_PASSWORD || !SESSION_SECRET) {
+    console.error('Error: ADMIN_PASSWORD and SESSION_SECRET must be set in the environment.');
+    process.exit(1);
+}
 
 // Configuração da Sessão
 app.use(cookieSession({
     name: 'session',
     keys: [SESSION_SECRET],
-    maxAge: 24 * 60 * 60 * 1000 // 24 horas
+    maxAge: 24 * 60 * 60 * 1000, // 24 horas
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production'
 }));
+
+app.use(helmet());
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
@@ -29,6 +40,9 @@ app.use(useragent.express()); // Usar o middleware user-agent
 let messageQueue = [];
 let isDisplayBusy = false;
 let messageLog = [];
+// Mantém apenas as últimas N mensagens em memória para enviar aos clientes.
+// O histórico completo continua salvo em "message_history.log".
+const MAX_LOG_SIZE = parseInt(process.env.MAX_LOG_SIZE, 10) || 100;
 let connectedClients = {}; // Para rastrear clientes
 let blockedIps = new Set(); // Para armazenar IPs bloqueados
 let displayedMessagesLog = []; // Histórico para o carrossel
@@ -209,22 +223,20 @@ const appendToLogFile = (message) => {
 };
 
 // Função para ler as mensagens prontas do arquivo
-const readPredefinedMessages = () => {
+const readPredefinedMessages = async () => {
     try {
-        if (fs.existsSync(messagesFilePath)) {
-            const data = fs.readFileSync(messagesFilePath, 'utf8');
-            // Adiciona um try-catch interno para o parse, caso o arquivo esteja corrompido
-            try {
-                return JSON.parse(data);
-            } catch (parseError) {
-                console.error('Erro ao fazer parse de messages.json:', parseError);
-                // Se o parse falhar, retorna as mensagens padrão para não quebrar o servidor
-            }
+        const data = await fsPromises.readFile(messagesFilePath, 'utf8');
+        try {
+            return JSON.parse(data);
+        } catch (parseError) {
+            console.error('Erro ao fazer parse de messages.json:', parseError);
         }
     } catch (readError) {
-        console.error('Erro ao ler messages.json:', readError);
+        if (readError.code !== 'ENOENT') {
+            console.error('Erro ao ler messages.json:', readError);
+        }
     }
-    // Retorna mensagens padrão se o arquivo não existir ou derro
+    // Retorna mensagens padrão se o arquivo não existir ou der erro
     return [
         "Sua beleza é como um bug no meu coração, impossível de ignorar!",
         "Se beleza desse cadeia, você pegaria prisão perpétua.",
@@ -234,7 +246,11 @@ const readPredefinedMessages = () => {
     ];
 };
 
-let predefinedMessages = readPredefinedMessages();
+let predefinedMessages = [];
+
+(async () => {
+    predefinedMessages = await readPredefinedMessages();
+})();
 
 // Função para processar a fila de mensagens
 const processQueue = () => {
@@ -301,9 +317,9 @@ const updateClientsAdmin = () => {
 };
 
 // Função para enviar as estatísticas atualizadas
-const updateStatsAdmin = () => {
+const updateStatsAdmin = async () => {
     try {
-        const data = fs.readFileSync(logFilePath, 'utf8');
+        const data = await fsPromises.readFile(logFilePath, 'utf8');
         const lines = data.split('\n').filter(Boolean);
         
         // Calcular mensagens populares
@@ -486,6 +502,10 @@ io.on('connection', (socket) => {
         };
         messageQueue.push(fullMessage);
         messageLog.push(fullMessage);
+        // Garante que apenas as últimas MAX_LOG_SIZE mensagens permaneçam em memória
+        while (messageLog.length > MAX_LOG_SIZE) {
+            messageLog.shift();
+        }
         appendToLogFile(fullMessage);
         
         // Notifica que uma NOVA mensagem chegou e atualiza a contagem
@@ -515,10 +535,10 @@ io.on('connection', (socket) => {
         socket.emit('updateMessages', predefinedMessages);
     });
 
-    socket.on('updateMessages', (newMessages) => {
+    socket.on('updateMessages', async (newMessages) => {
         predefinedMessages = newMessages;
         try {
-            fs.writeFileSync(messagesFilePath, JSON.stringify(newMessages, null, 2));
+            await fsPromises.writeFile(messagesFilePath, JSON.stringify(newMessages, null, 2));
             console.log('Mensagens prontas atualizadas e salvas.');
             io.emit('updateMessages', predefinedMessages); // Envia para todos os clientes
         } catch (error) {
