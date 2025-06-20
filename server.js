@@ -54,6 +54,7 @@ let blockedIps = new Set(); // Para armazenar IPs bloqueados
 let displayedMessagesLog = []; // Histórico para o carrossel
 let currentDisplayMode = 'default'; // Modos: 'default', 'carousel', 'ticker'
 let currentMessage = null; // Rastreia a mensagem atualmente em exibição
+let idleLoopTimeout = null; // Novo: controla o ciclo de ociosidade
 
 // Estrutura para Estatísticas
 const stats = {
@@ -272,9 +273,46 @@ let predefinedMessages = [];
     predefinedMessages = await readPredefinedMessages();
 })();
 
-// Função para processar a fila de mensagens
+// Função para calcular o Top 5
+const calculateTopRecipients = () => {
+    if (messageLog.length < 10) {
+        return []; // Só mostra o ranking após 10 mensagens
+    }
+    const recipientCounts = messageLog.reduce((acc, msg) => {
+        const recipient = msg.recipient.trim();
+        acc[recipient] = (acc[recipient] || 0) + 1;
+        return acc;
+    }, {});
+
+    return Object.entries(recipientCounts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 5)
+        .map(([name, count], index) => ({ rank: index + 1, name, count }));
+};
+
+const enterHistoryMode = () => {
+    log("Iniciando modo de memórias.");
+    const top5 = calculateTopRecipients();
+    io.emit('enterHistoryMode', { history: displayedMessagesLog, top5 });
+
+    // Após 1 minuto no modo de memórias, volta para a espera
+    clearTimeout(idleLoopTimeout);
+    idleLoopTimeout = setTimeout(enterWaitState, 60000); // 1 minuto
+};
+
+const enterWaitState = () => {
+    log("Iniciando modo de espera.");
+    io.emit('enterWaitState');
+
+    // Após 1 minuto na espera, vai para o modo de memórias
+    clearTimeout(idleLoopTimeout);
+    idleLoopTimeout = setTimeout(enterHistoryMode, 60000); // 1 minuto
+};
+
 const processQueue = () => {
     if (messageQueue.length > 0 && !isDisplayBusy) {
+        clearTimeout(idleLoopTimeout); // Interrompe o ciclo de ociosidade
+        idleLoopTimeout = null;
         isDisplayBusy = true;
         const nextMessage = messageQueue.shift();
         currentMessage = nextMessage;
@@ -298,8 +336,10 @@ const processQueue = () => {
             totalMessages: messageLog ? messageLog.length : 0
         });
     } else if (messageQueue.length === 0 && !isDisplayBusy) {
-        log("Fila vazia e telão livre. Instruindo para entrar em modo de espera.");
-        io.emit('enterWaitState');
+        // Inicia o ciclo de ociosidade se não estiver rodando
+        if (!idleLoopTimeout) {
+            enterWaitState();
+        }
     }
 };
 
@@ -543,7 +583,7 @@ io.on('connection', (socket) => {
         log(`Telão (ID do Socket: ${socket.id}) informou que terminou de exibir a mensagem.`);
         isDisplayBusy = false;
         currentMessage = null;
-        processQueue();
+        processQueue(); // Isso vai iniciar o ciclo de ociosidade se a fila estiver vazia
     });
 
     socket.on('getMessages', () => {

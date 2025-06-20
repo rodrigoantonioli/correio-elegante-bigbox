@@ -85,18 +85,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Gerenciamento de Estado da Tela ---
     const setScreenState = (state) => {
         log(`Transicionando para o estado de '${state}'.`);
+        // Oculta todas as telas principais
+        waitingScreen.classList.add('hidden');
+        messageScreen.classList.add('hidden');
+        historyPlaybackScreen.classList.add('hidden');
+
+        // Para qualquer animação em andamento
+        if (historyAnimationInterval) {
+            clearInterval(historyAnimationInterval);
+            historyAnimationInterval = null;
+        }
+        if (currentMode === 'ticker') tickerContent.classList.remove('animate');
+
         if (state === 'waiting') {
-            console.log('Transicionando para o estado de ESPERA.');
             waitingScreen.classList.remove('hidden');
-            messageScreen.classList.add('hidden');
-            displayWrapper.classList.add('hidden');
-            if (currentMode === 'ticker') tickerContent.classList.remove('animate');
             startIncentiveCycle();
-        } else { // 'message'
-            console.log('Transicionando para o estado de MENSAGEM.');
-            waitingScreen.classList.add('hidden');
+        } else if (state === 'message') {
             messageScreen.classList.remove('hidden');
             displayWrapper.classList.remove('hidden');
+            stopIncentiveCycle();
+        } else if (state === 'history') {
+            historyPlaybackScreen.classList.remove('hidden');
             stopIncentiveCycle();
         }
     };
@@ -306,6 +315,10 @@ document.addEventListener('DOMContentLoaded', () => {
             log('⚠️ Tentativa de interrupção, mas nenhuma mensagem estava sendo exibida (messageStartTime nulo).');
         }
     });
+    socket.on('enterHistoryMode', (data) => {
+        log('Recebida instrução do servidor para entrar em modo de memórias.');
+        renderHistoryScreen(data.history, data.top5);
+    });
 
     // --- Listeners de Eventos ---
     carouselPrevBtn.addEventListener('click', () => {
@@ -441,5 +454,70 @@ document.addEventListener('DOMContentLoaded', () => {
             newSize = baseSize - ((messageText.length - maxLength) * reductionFactor);
         }
         element.style.fontSize = `${Math.max(minSize, newSize)}rem`;
+    };
+
+    const historyPlaybackScreen = document.getElementById('history-playback-screen');
+    const top5List = document.getElementById('top-5-list');
+    const bubblesContainer = document.getElementById('message-bubbles-container');
+    let historyAnimationInterval = null;
+
+    const renderHistoryScreen = (history, top5) => {
+        setScreenState('history');
+        
+        // 1. Renderiza o Top 5
+        top5List.innerHTML = '';
+        if (top5 && top5.length > 0) {
+            top5.forEach(item => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${item.rank}. ${item.name}</span> <strong>(${item.count})</strong>`;
+                top5List.appendChild(li);
+            });
+            document.getElementById('history-ranking').classList.remove('hidden');
+        } else {
+            document.getElementById('history-ranking').classList.add('hidden');
+        }
+
+        // 2. Gera o QR Code
+        const qrCanvasHistory = document.getElementById('qr-code-history');
+        if (qrCanvasHistory) {
+            let url = window.location.origin;
+            if (window.location.hostname.includes('onrender.com')) {
+                url = 'https://correio-elegante-bigbox.onrender.com';
+            }
+            QRCode.toCanvas(qrCanvasHistory, url, { width: 150, margin: 1 }, (e) => {
+                if (e) console.error("Erro ao gerar QR de histórico:", e);
+            });
+        }
+
+        // 3. Inicia a animação dos balões
+        if (history && history.length > 0) {
+            historyAnimationInterval = setInterval(() => {
+                createMessageBubble(history[Math.floor(Math.random() * history.length)]);
+            }, 2000); // Cria um novo balão a cada 2 segundos
+        }
+    };
+
+    const createMessageBubble = (msg) => {
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+        
+        const time = new Date(msg.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        
+        bubble.innerHTML = `
+            <p class="msg-text">Para: <strong>${msg.recipient}</strong></p>
+            <p class="msg-text">"${msg.message}"</p>
+            <p class="msg-details">De: ${msg.sender} (${time})</p>
+        `;
+
+        // Posição e delay aleatórios
+        bubble.style.left = `${Math.random() * 85}%`;
+        bubble.style.animationDelay = `${Math.random() * 5}s`;
+
+        bubblesContainer.appendChild(bubble);
+
+        // Remove o balão depois que a animação termina para não sobrecarregar o DOM
+        setTimeout(() => {
+            bubble.remove();
+        }, 15000); // Duração da animação
     };
 }); 
