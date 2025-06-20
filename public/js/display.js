@@ -50,6 +50,11 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     let phraseInterval;
 
+    const log = (message) => {
+        const time = new Date().toLocaleTimeString('pt-BR', { hour12: false });
+        console.log(`[${time}] TELÃO: ${message}`);
+    };
+
     // --- Inicialização ---
     const initializeDisplay = () => {
         startOverlay.classList.add('hidden');
@@ -78,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Gerenciamento de Estado da Tela ---
     const setScreenState = (state) => {
+        log(`Transicionando para o estado de '${state}'.`);
         if (state === 'waiting') {
             console.log('Transicionando para o estado de ESPERA.');
             waitingScreen.classList.remove('hidden');
@@ -175,8 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const startDisplay = (msg, duration) => {
-        setScreenState('message'); // Garante que a tela de mensagem esteja visível
-
+        setScreenState('message');
         switch (currentMode) {
             case 'default':
                 renderDefault(msg);
@@ -192,12 +197,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const fullText = `Correio Elegante para ${msg.recipient}. A mensagem é: ${msg.message}. Enviado por: ${msg.sender}.`;
         speakMessage(fullText);
         messageStartTime = Date.now();
+        log(`Iniciando exibição da mensagem ID ${msg.id}. Duração máxima: ${duration || MAX_DISPLAY_TIME}ms.`);
         
         const displayDuration = duration !== undefined ? duration : MAX_DISPLAY_TIME;
         currentMessageTimeout = setTimeout(finishDisplay, displayDuration);
     };
 
     const finishDisplay = () => {
+        log(`Finalizando exibição. Notificando o servidor.`);
         console.log('Tempo de exibição terminou. Notificando o servidor que estou pronto.');
         clearTimeout(currentMessageTimeout);
         currentMessageTimeout = null;
@@ -236,14 +243,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     socket.on('modeUpdate', newMode => switchMode(newMode));
     socket.on('displayMessage', data => {
-        console.log('Recebida nova mensagem do servidor:', data.message.id);
+        log(`Recebida nova mensagem do servidor (ID: ${data.message.id}).`);
         totalMessages = data.totalMessages || 0;
         updateTotalMessagesDisplay();
         displayedHistory = data.history;
         startDisplay(data.message);
     });
     socket.on('enterWaitState', () => {
-        console.log('Recebida instrução do servidor para entrar em modo de espera.');
+        log('Recebida instrução do servidor para entrar em modo de espera.');
         setScreenState('waiting');
     });
     socket.on('queueUpdate', (data) => {
@@ -259,15 +266,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     socket.on('interruptDisplay', () => {
-        console.log('Recebida instrução de interrupção do servidor.');
+        log('Recebida instrução de interrupção do servidor.');
         if (messageStartTime) {
             const elapsedTime = Date.now() - messageStartTime;
+            log(`Verificando tempo de interrupção. Tempo decorrido: ${elapsedTime}ms. Mínimo necessário: ${MIN_DISPLAY_TIME}ms.`);
             if (elapsedTime >= MIN_DISPLAY_TIME) {
-                console.log('Tempo mínimo de exibição atingido. Interrompendo para exibir a próxima.');
+                log('✅ Tempo mínimo de exibição atingido. Interrompendo para exibir a próxima.');
                 finishDisplay();
             } else {
-                console.log(`Ainda dentro do tempo mínimo de exibição. ${MIN_DISPLAY_TIME - elapsedTime}ms restantes.`);
+                log(`❌ Ainda dentro do tempo mínimo de exibição. ${MIN_DISPLAY_TIME - elapsedTime}ms restantes.`);
             }
+        } else {
+            log('⚠️ Tentativa de interrupção, mas nenhuma mensagem estava sendo exibida (messageStartTime nulo).');
         }
     });
 
