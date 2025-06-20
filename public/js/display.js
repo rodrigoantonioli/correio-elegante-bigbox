@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const MIN_DISPLAY_TIME = 20000; // 20 segundos
     const MAX_DISPLAY_TIME = 60000; // 1 minuto
     let ptBrVoices = [];
-    let totalMessages = 0;
+    let totalMessages = 0; // Inicializa com 0 explicitamente
 
     const incentivePhrases = [
         "Sua mensagem pode ser a próxima!",
@@ -66,7 +66,14 @@ document.addEventListener('DOMContentLoaded', () => {
             notificationSound.pause();
             notificationSound.currentTime = 0;
         }).catch(e => console.log("Áudio bloqueado."));
-        generateQRCode();
+        
+        // Atualiza o display de mensagens inicialmente
+        updateTotalMessagesDisplay();
+        
+        // Gera o QR code com um pequeno delay para garantir que os elementos estejam prontos
+        setTimeout(() => {
+            generateQRCode();
+        }, 100);
     };
 
     startButton.addEventListener('click', initializeDisplay, { once: true });
@@ -206,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Estado inicial recebido:", state);
         switchMode(state.displayMode);
         displayedHistory = state.displayedHistory || [];
-        totalMessages = state.totalMessages || 0;
+        totalMessages = state.totalMessages || 0; // Garante que seja um número
         updateTotalMessagesDisplay();
 
         // Se o telão estava ocupado quando reconectamos, retoma a exibição
@@ -231,13 +238,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     socket.on('modeUpdate', newMode => switchMode(newMode));
     socket.on('displayMessage', data => {
-        totalMessages = data.totalMessages;
+        totalMessages = data.totalMessages || 0; // Garante que seja um número
         updateTotalMessagesDisplay();
         displayedHistory = data.history;
         startDisplay(data.message);
     });
     socket.on('queueUpdate', (data) => {
-        totalMessages = data.totalMessages;
+        totalMessages = data.totalMessages || 0; // Garante que seja um número
         updateTotalMessagesDisplay();
         queueCountSpan.textContent = data.count;
         queueCounterDiv.classList.toggle('hidden', data.count === 0);
@@ -283,20 +290,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Função para atualizar display de mensagens com singular/plural correto ---
     const updateTotalMessagesDisplay = () => {
-        if (totalMessages === 1) {
-            totalCountEl.textContent = `${totalMessages} mensagem enviada`;
+        // Garante que totalMessages seja um número válido
+        const count = totalMessages || 0;
+        if (count === 1) {
+            totalCountEl.textContent = `${count} mensagem enviada`;
         } else {
-            totalCountEl.textContent = `${totalMessages} mensagens enviadas`;
+            totalCountEl.textContent = `${count} mensagens enviadas`;
         }
     };
 
     // --- Funções Auxiliares (QR Code, Font Size) ---
     const generateQRCode = () => {
         const url = window.location.origin;
-        // Desenha o QR Code grande (na tela de espera)
-        QRCode.toCanvas(document.getElementById('qr-code'), url, { width: 300, margin: 2 }, (e) => { if(e) console.error(e); });
-        // Desenha o QR Code pequeno (na barra lateral)
-        QRCode.toCanvas(document.getElementById('qr-code-small'), url, { width: 180, margin: 1 }, (e) => { if(e) console.error(e); });
+        const qrCanvas = document.getElementById('qr-code');
+        const qrCanvasSmall = document.getElementById('qr-code-small');
+        
+        // Verifica se os elementos existem antes de tentar gerar
+        if (qrCanvas) {
+            QRCode.toCanvas(qrCanvas, url, { width: 300, margin: 2 }, (e) => { 
+                if(e) {
+                    console.error('Erro ao gerar QR Code grande:', e);
+                    // Tenta novamente após 1 segundo
+                    setTimeout(() => generateQRCode(), 1000);
+                } else {
+                    console.log('QR Code grande gerado com sucesso');
+                }
+            });
+        }
+        
+        if (qrCanvasSmall) {
+            QRCode.toCanvas(qrCanvasSmall, url, { width: 180, margin: 1 }, (e) => { 
+                if(e) {
+                    console.error('Erro ao gerar QR Code pequeno:', e);
+                } else {
+                    console.log('QR Code pequeno gerado com sucesso');
+                }
+            });
+        }
     };
     const adjustFontSize = (element, messageText) => {
         const isMobile = window.innerWidth <= 1024; // Ajuste o breakpoint se necessário

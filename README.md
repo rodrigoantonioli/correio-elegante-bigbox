@@ -2,7 +2,6 @@
 
 Projeto completo de um sistema de Correio Elegante para festas e eventos, com envio de mensagens por celular, exibição em telão com voz, e painel de administração seguro. Ideal para festas juninas, casamentos e confraternizações.
 
-![Demonstração do Layout](https://i.imgur.com/L8u0a8V.png)
 
 ## ✨ Funcionalidades Principais
 

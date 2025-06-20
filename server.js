@@ -254,9 +254,12 @@ const processQueue = () => {
         io.emit('displayMessage', { 
             message: nextMessage, 
             history: displayedMessagesLog,
-            totalMessages: messageLog.length
+            totalMessages: messageLog ? messageLog.length : 0 // Garante que seja um número
         });
-        io.emit('queueUpdate', { count: messageQueue.length, totalMessages: messageLog.length }); // Atualiza o contador para todos após remover
+        io.emit('queueUpdate', { 
+            count: messageQueue.length, 
+            totalMessages: messageLog ? messageLog.length : 0 // Garante que seja um número
+        }); // Atualiza o contador para todos após remover
     }
 };
 
@@ -346,6 +349,9 @@ const updateStatsAdmin = () => {
     // Adiciona o número atual de clientes conectados
     stats.currentClients = Object.keys(connectedClients).length;
 
+    // Garante que totalMessages do messageLog seja sempre um número
+    const totalFromLog = messageLog ? messageLog.length : 0;
+
     io.to('stats_admin_room').emit('statsUpdate', stats);
 };
 
@@ -401,7 +407,7 @@ io.on('connection', (socket) => {
     socket.emit('initialState', { 
         displayMode: currentDisplayMode,
         displayedHistory: displayedMessagesLog,
-        totalMessages: messageLog.length,
+        totalMessages: messageLog ? messageLog.length : 0,
         isBusy: isDisplayBusy,
         currentMessage: currentMessage // Envia a mensagem atual se houver
     });
@@ -410,7 +416,10 @@ io.on('connection', (socket) => {
     updateStatsAdmin();
 
     // Envia o estado atual da fila para o cliente que acabou de conectar
-    socket.emit('queueUpdate', { count: messageQueue.length });
+    socket.emit('queueUpdate', { 
+        count: messageQueue.length, 
+        totalMessages: messageLog ? messageLog.length : 0
+    });
 
     // Envia as mensagens prontas para o cliente que acabou de conectar
     socket.emit('updateMessages', predefinedMessages);
@@ -450,7 +459,7 @@ io.on('connection', (socket) => {
             socket.emit('initialState', { 
                 displayMode: currentDisplayMode,
                 displayedHistory: displayedMessagesLog,
-                totalMessages: messageLog.length,
+                totalMessages: messageLog ? messageLog.length : 0, // Garante que seja um número
                 isBusy: isDisplayBusy,
                 currentMessage: currentMessage // Envia a mensagem atual se houver
             });
@@ -480,7 +489,11 @@ io.on('connection', (socket) => {
         appendToLogFile(fullMessage);
         
         // Notifica que uma NOVA mensagem chegou e atualiza a contagem
-        io.emit('queueUpdate', { count: messageQueue.length, new: true, totalMessages: messageLog.length });
+        io.emit('queueUpdate', { 
+            count: messageQueue.length, 
+            new: true, 
+            totalMessages: messageLog ? messageLog.length : 0 // Garante que seja um número
+        });
 
         // Se o telão estiver ocupado, comanda a interrupção para acelerar a fila
         if (isDisplayBusy) {
