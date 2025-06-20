@@ -70,18 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Atualiza o display de mensagens inicialmente
         updateTotalMessagesDisplay();
         
-        // Gera o QR code imediatamente e tenta novamente se necessário
-        setTimeout(() => {
-            generateQRCode();
-            // Tenta novamente após 2 segundos caso a primeira tentativa falhe
-            setTimeout(() => {
-                const qrCanvas = document.getElementById('qr-code');
-                if (qrCanvas && qrCanvas.width === 0) {
-                    console.log('QR Code não foi gerado, tentando novamente...');
-                    generateQRCode();
-                }
-            }, 2000);
-        }, 500);
+        // Gera o QR code com um pequeno delay para garantir que a UI esteja pronta
+        setTimeout(generateQRCode, 100);
     };
 
     startButton.addEventListener('click', initializeDisplay, { once: true });
@@ -311,183 +301,89 @@ document.addEventListener('DOMContentLoaded', () => {
     const generateQRCode = () => {
         // Determina a URL correta baseada no ambiente
         let url = window.location.origin;
-        
-        // Se estiver no Render, usa o endereço fixo
         if (window.location.hostname.includes('onrender.com')) {
             url = 'https://correio-elegante-bigbox.onrender.com';
         }
-        
         console.log(`Gerando QR Code para URL: ${url}`);
         
         const qrCanvas = document.getElementById('qr-code');
         const qrCanvasSmall = document.getElementById('qr-code-small');
         const qrLoading = document.getElementById('qr-loading');
         
-        // Mostra mensagem de carregamento
-        if (qrLoading) {
-            qrLoading.style.display = 'block';
-        }
-        
-        // Função alternativa para criar QR code usando API externa
-        const createQRCodeWithAPI = (canvas, size) => {
-            if (!canvas) return;
-            
-            const ctx = canvas.getContext('2d');
-            canvas.width = size;
-            canvas.height = size;
-            
-            // URL da API do QR Server
-            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}`;
-            
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = function() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0, size, size);
-                console.log(`QR Code gerado via API para canvas ${size}x${size}`);
-                if (qrLoading && size === 300) { // Só esconde no QR grande
-                    qrLoading.style.display = 'none';
-                }
-            };
-            img.onerror = function() {
-                console.error(`Erro ao carregar QR Code via API para canvas ${size}x${size}`);
-                // Fallback: mostra texto com a URL
-                createTextFallback(canvas, url, size);
-            };
-            img.src = qrApiUrl;
+        if (qrLoading) qrLoading.style.display = 'block';
+
+        const hideLoading = () => {
+            if (qrLoading) qrLoading.style.display = 'none';
         };
-        
-        // Função de fallback que mostra texto com a URL
-        const createTextFallback = (canvas, url, size) => {
-            if (!canvas) return;
-            
+
+        const createTextFallback = (canvas, textUrl) => {
             const ctx = canvas.getContext('2d');
-            canvas.width = size;
-            canvas.height = size;
-            
-            // Fundo branco
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, size, size);
-            
-            // Borda
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(0, 0, size, size);
-            
-            // Texto
-            ctx.fillStyle = '#000000';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'black';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            
-            // Ajusta o tamanho da fonte baseado no canvas
-            const fontSize = size > 200 ? 16 : 12;
-            ctx.font = `${fontSize}px Arial`;
-            
-            // Quebra o texto em linhas
-            const words = url.split('/');
-            const lines = [];
-            let currentLine = '';
-            
-            words.forEach(word => {
-                const testLine = currentLine + (currentLine ? '/' : '') + word;
-                const metrics = ctx.measureText(testLine);
-                if (metrics.width > size - 20 && currentLine !== '') {
-                    lines.push(currentLine);
-                    currentLine = word;
-                } else {
-                    currentLine = testLine;
-                }
-            });
-            if (currentLine) lines.push(currentLine);
-            
-            // Desenha as linhas
-            const lineHeight = fontSize + 4;
-            const startY = (size - (lines.length * lineHeight)) / 2 + fontSize / 2;
-            
-            lines.forEach((line, index) => {
-                ctx.fillText(line, size / 2, startY + (index * lineHeight));
-            });
-            
-            console.log(`Fallback de texto criado para canvas ${size}x${size}`);
-            if (qrLoading && size === 300) {
-                qrLoading.style.display = 'none';
-            }
+            ctx.font = '16px Arial';
+            ctx.fillText(textUrl, canvas.width / 2, canvas.height / 2);
+            console.warn(`Fallback de TEXTO ativado para: ${textUrl}`);
+            hideLoading();
         };
-        
-        // Verifica se a biblioteca QRCode está disponível
-        if (typeof QRCode !== 'undefined') {
-            console.log('Usando biblioteca QRCode');
-            
-            let qrCodesGenerated = 0;
-            const totalQRCodes = 2;
-            
-            const checkComplete = () => {
-                qrCodesGenerated++;
-                if (qrCodesGenerated >= totalQRCodes && qrLoading) {
-                    qrLoading.style.display = 'none';
-                }
+
+        const createApiFallback = (canvas, size) => {
+            console.warn(`Biblioteca local falhou. Usando fallback de API para canvas ${size}x${size}.`);
+            const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}`;
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, size, size);
+                console.log(`QR Code gerado via API para canvas ${size}x${size}.`);
+                hideLoading();
             };
-            
+            img.onerror = () => {
+                console.error(`Falha TOTAL. API e biblioteca falharam. Ativando fallback de TEXTO.`);
+                createTextFallback(canvas, url);
+            };
+            img.src = apiUrl;
+        };
+
+        // Tenta usar a biblioteca local primeiro
+        try {
+            if (typeof QRCode === 'undefined') {
+                throw new Error('Biblioteca QRCode não foi carregada.');
+            }
+
             // QR Code grande
             if (qrCanvas) {
-                qrCanvas.width = 300;
-                qrCanvas.height = 300;
-                const ctx = qrCanvas.getContext('2d');
-                ctx.clearRect(0, 0, qrCanvas.width, qrCanvas.height);
-                
-                QRCode.toCanvas(qrCanvas, url, { 
-                    width: 300, 
-                    margin: 2,
-                    color: {
-                        dark: '#000000',
-                        light: '#FFFFFF'
-                    },
-                    errorCorrectionLevel: 'M'
-                }, (e) => { 
-                    if(e) {
-                        console.error('Erro ao gerar QR Code grande:', e);
-                        createQRCodeWithAPI(qrCanvas, 300);
+                QRCode.toCanvas(qrCanvas, url, { width: 300, margin: 2, errorCorrectionLevel: 'M' }, (error) => {
+                    if (error) {
+                        console.error('Erro ao gerar QR Code grande com a biblioteca:', error);
+                        createApiFallback(qrCanvas, 300);
                     } else {
-                        console.log('QR Code grande gerado com sucesso');
-                        checkComplete();
+                        console.log('QR Code grande gerado com sucesso via biblioteca.');
+                        hideLoading();
                     }
                 });
-            } else {
-                checkComplete();
             }
-            
+
             // QR Code pequeno
             if (qrCanvasSmall) {
-                qrCanvasSmall.width = 180;
-                qrCanvasSmall.height = 180;
-                const ctx = qrCanvasSmall.getContext('2d');
-                ctx.clearRect(0, 0, qrCanvasSmall.width, qrCanvasSmall.height);
-                
-                QRCode.toCanvas(qrCanvasSmall, url, { 
-                    width: 180, 
-                    margin: 1,
-                    color: {
-                        dark: '#000000',
-                        light: '#FFFFFF'
-                    },
-                    errorCorrectionLevel: 'M'
-                }, (e) => { 
-                    if(e) {
-                        console.error('Erro ao gerar QR Code pequeno:', e);
-                        createQRCodeWithAPI(qrCanvasSmall, 180);
+                QRCode.toCanvas(qrCanvasSmall, url, { width: 180, margin: 1, errorCorrectionLevel: 'M' }, (error) => {
+                    if (error) {
+                        console.error('Erro ao gerar QR Code pequeno com a biblioteca:', error);
+                        createApiFallback(qrCanvasSmall, 180);
                     } else {
-                        console.log('QR Code pequeno gerado com sucesso');
+                        console.log('QR Code pequeno gerado com sucesso via biblioteca.');
                     }
-                    checkComplete();
                 });
-            } else {
-                checkComplete();
             }
-        } else {
-            console.warn('Biblioteca QRCode não disponível, usando API externa');
-            // Usa API externa diretamente
-            createQRCodeWithAPI(qrCanvas, 300);
-            createQRCodeWithAPI(qrCanvasSmall, 180);
+        } catch (error) {
+            console.error(error.message);
+            // Se a biblioteca falhar totalmente, usa o fallback de API para ambos
+            if (qrCanvas) createApiFallback(qrCanvas, 300);
+            if (qrCanvasSmall) createApiFallback(qrCanvasSmall, 180);
         }
     };
     const adjustFontSize = (element, messageText) => {
