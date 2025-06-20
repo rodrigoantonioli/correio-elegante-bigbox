@@ -70,21 +70,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // Atualiza o display de mensagens inicialmente
         updateTotalMessagesDisplay();
         
-        // Função para aguardar a biblioteca QRCode estar disponível
-        const waitForQRCode = (attempts = 0) => {
-            if (typeof QRCode !== 'undefined') {
-                console.log('QRCode disponível, gerando códigos...');
-                generateQRCode();
-            } else if (attempts < 20) { // Tenta por até 10 segundos (20 * 500ms)
-                console.log(`Aguardando QRCode... tentativa ${attempts + 1}`);
-                setTimeout(() => waitForQRCode(attempts + 1), 500);
-            } else {
-                console.error('QRCode não pôde ser carregado após múltiplas tentativas');
-            }
-        };
-        
-        // Inicia a espera pela biblioteca QRCode
-        waitForQRCode();
+        // Gera o QR code imediatamente e tenta novamente se necessário
+        setTimeout(() => {
+            generateQRCode();
+            // Tenta novamente após 2 segundos caso a primeira tentativa falhe
+            setTimeout(() => {
+                const qrCanvas = document.getElementById('qr-code');
+                if (qrCanvas && qrCanvas.width === 0) {
+                    console.log('QR Code não foi gerado, tentando novamente...');
+                    generateQRCode();
+                }
+            }, 2000);
+        }, 500);
     };
 
     startButton.addEventListener('click', initializeDisplay, { once: true });
@@ -331,80 +328,166 @@ document.addEventListener('DOMContentLoaded', () => {
             qrLoading.style.display = 'block';
         }
         
-        // Verifica se a biblioteca QRCode está disponível
-        if (typeof QRCode === 'undefined') {
-            console.error('Biblioteca QRCode não carregada. Tentando novamente em 2 segundos...');
-            setTimeout(() => generateQRCode(), 2000);
-            return;
-        }
+        // Função alternativa para criar QR code usando API externa
+        const createQRCodeWithAPI = (canvas, size) => {
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            canvas.width = size;
+            canvas.height = size;
+            
+            // URL da API do QR Server
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}`;
+            
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, size, size);
+                console.log(`QR Code gerado via API para canvas ${size}x${size}`);
+                if (qrLoading && size === 300) { // Só esconde no QR grande
+                    qrLoading.style.display = 'none';
+                }
+            };
+            img.onerror = function() {
+                console.error(`Erro ao carregar QR Code via API para canvas ${size}x${size}`);
+                // Fallback: mostra texto com a URL
+                createTextFallback(canvas, url, size);
+            };
+            img.src = qrApiUrl;
+        };
         
-        let qrCodesGenerated = 0;
-        const totalQRCodes = 2;
-        
-        const checkComplete = () => {
-            qrCodesGenerated++;
-            if (qrCodesGenerated >= totalQRCodes && qrLoading) {
+        // Função de fallback que mostra texto com a URL
+        const createTextFallback = (canvas, url, size) => {
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Fundo branco
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Borda
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(0, 0, size, size);
+            
+            // Texto
+            ctx.fillStyle = '#000000';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Ajusta o tamanho da fonte baseado no canvas
+            const fontSize = size > 200 ? 16 : 12;
+            ctx.font = `${fontSize}px Arial`;
+            
+            // Quebra o texto em linhas
+            const words = url.split('/');
+            const lines = [];
+            let currentLine = '';
+            
+            words.forEach(word => {
+                const testLine = currentLine + (currentLine ? '/' : '') + word;
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > size - 20 && currentLine !== '') {
+                    lines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine = testLine;
+                }
+            });
+            if (currentLine) lines.push(currentLine);
+            
+            // Desenha as linhas
+            const lineHeight = fontSize + 4;
+            const startY = (size - (lines.length * lineHeight)) / 2 + fontSize / 2;
+            
+            lines.forEach((line, index) => {
+                ctx.fillText(line, size / 2, startY + (index * lineHeight));
+            });
+            
+            console.log(`Fallback de texto criado para canvas ${size}x${size}`);
+            if (qrLoading && size === 300) {
                 qrLoading.style.display = 'none';
             }
         };
         
-        // Verifica se os elementos existem antes de tentar gerar
-        if (qrCanvas) {
-            // Limpa o canvas antes de gerar
-            qrCanvas.width = 300;
-            qrCanvas.height = 300;
-            const ctx = qrCanvas.getContext('2d');
-            ctx.clearRect(0, 0, qrCanvas.width, qrCanvas.height);
+        // Verifica se a biblioteca QRCode está disponível
+        if (typeof QRCode !== 'undefined') {
+            console.log('Usando biblioteca QRCode');
             
-            QRCode.toCanvas(qrCanvas, url, { 
-                width: 300, 
-                margin: 2,
-                color: {
-                    dark: '#000000',
-                    light: '#FFFFFF'
-                },
-                errorCorrectionLevel: 'M'
-            }, (e) => { 
-                if(e) {
-                    console.error('Erro ao gerar QR Code grande:', e);
-                    // Tenta novamente após 2 segundos
-                    setTimeout(() => generateQRCode(), 2000);
-                } else {
-                    console.log('QR Code grande gerado com sucesso');
-                    checkComplete();
-                }
-            });
-        } else {
-            console.warn('Elemento qr-code não encontrado');
-            checkComplete();
-        }
-        
-        if (qrCanvasSmall) {
-            // Limpa o canvas antes de gerar
-            qrCanvasSmall.width = 180;
-            qrCanvasSmall.height = 180;
-            const ctx = qrCanvasSmall.getContext('2d');
-            ctx.clearRect(0, 0, qrCanvasSmall.width, qrCanvasSmall.height);
+            let qrCodesGenerated = 0;
+            const totalQRCodes = 2;
             
-            QRCode.toCanvas(qrCanvasSmall, url, { 
-                width: 180, 
-                margin: 1,
-                color: {
-                    dark: '#000000',
-                    light: '#FFFFFF'
-                },
-                errorCorrectionLevel: 'M'
-            }, (e) => { 
-                if(e) {
-                    console.error('Erro ao gerar QR Code pequeno:', e);
-                } else {
-                    console.log('QR Code pequeno gerado com sucesso');
+            const checkComplete = () => {
+                qrCodesGenerated++;
+                if (qrCodesGenerated >= totalQRCodes && qrLoading) {
+                    qrLoading.style.display = 'none';
                 }
+            };
+            
+            // QR Code grande
+            if (qrCanvas) {
+                qrCanvas.width = 300;
+                qrCanvas.height = 300;
+                const ctx = qrCanvas.getContext('2d');
+                ctx.clearRect(0, 0, qrCanvas.width, qrCanvas.height);
+                
+                QRCode.toCanvas(qrCanvas, url, { 
+                    width: 300, 
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    },
+                    errorCorrectionLevel: 'M'
+                }, (e) => { 
+                    if(e) {
+                        console.error('Erro ao gerar QR Code grande:', e);
+                        createQRCodeWithAPI(qrCanvas, 300);
+                    } else {
+                        console.log('QR Code grande gerado com sucesso');
+                        checkComplete();
+                    }
+                });
+            } else {
                 checkComplete();
-            });
+            }
+            
+            // QR Code pequeno
+            if (qrCanvasSmall) {
+                qrCanvasSmall.width = 180;
+                qrCanvasSmall.height = 180;
+                const ctx = qrCanvasSmall.getContext('2d');
+                ctx.clearRect(0, 0, qrCanvasSmall.width, qrCanvasSmall.height);
+                
+                QRCode.toCanvas(qrCanvasSmall, url, { 
+                    width: 180, 
+                    margin: 1,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    },
+                    errorCorrectionLevel: 'M'
+                }, (e) => { 
+                    if(e) {
+                        console.error('Erro ao gerar QR Code pequeno:', e);
+                        createQRCodeWithAPI(qrCanvasSmall, 180);
+                    } else {
+                        console.log('QR Code pequeno gerado com sucesso');
+                    }
+                    checkComplete();
+                });
+            } else {
+                checkComplete();
+            }
         } else {
-            console.warn('Elemento qr-code-small não encontrado');
-            checkComplete();
+            console.warn('Biblioteca QRCode não disponível, usando API externa');
+            // Usa API externa diretamente
+            createQRCodeWithAPI(qrCanvas, 300);
+            createQRCodeWithAPI(qrCanvasSmall, 180);
         }
     };
     const adjustFontSize = (element, messageText) => {
