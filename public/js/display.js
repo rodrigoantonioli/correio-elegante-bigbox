@@ -354,10 +354,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const qrCanvasSmall = document.getElementById('qr-code-small');
         const qrLoading = document.getElementById('qr-loading');
         
-        if (qrLoading) qrLoading.style.display = 'block';
+        if (qrLoading) qrLoading.classList.remove('hidden');
 
         const hideLoading = () => {
-            if (qrLoading) qrLoading.style.display = 'none';
+            if (qrLoading) qrLoading.classList.add('hidden');
         };
 
         const createTextFallback = (canvas, textUrl) => {
