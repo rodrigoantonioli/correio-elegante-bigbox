@@ -539,7 +539,7 @@ io.on('connection', (socket) => {
         }
         if (page === '/display') {
             socket.join('display_room');
-            console.log('Cliente de telão se conectou e foi adicionado à sala.');
+            log('Cliente de telão se conectou e foi adicionado à sala.');
             
             // Envia o estado atual completo para o novo cliente de telão
             socket.emit('initialState', { 
@@ -549,6 +549,9 @@ io.on('connection', (socket) => {
                 isBusy: isDisplayBusy,
                 currentMessage: currentMessage // Envia a mensagem atual se houver
             });
+
+            // Inicia o ciclo de ociosidade se a fila estiver vazia.
+            processQueue();
         }
         updateClientsAdmin();
         updateStatsAdmin();
