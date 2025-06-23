@@ -157,35 +157,43 @@ app.get('/history', checkAuth, (req, res) => {
 app.get('/api/history', checkAuth, (req, res) => {
     fs.readFile(logFilePath, 'utf8', (err, data) => {
         if (err) {
-            if (err.code === 'ENOENT') { // Se o arquivo não existe, retorna vazio
-                return res.json({ log: [] });
+            if (err.code === 'ENOENT') {
+                const fromMemory = messageLog.map(formatLogEntry).reverse();
+                return res.json({ log: fromMemory });
             }
             console.error('Erro ao ler arquivo de log:', err);
             return res.status(500).json({ error: 'Erro ao ler o log.' });
         }
-        const logEntries = data.split('\n').filter(Boolean).reverse(); // Inverte para o mais novo primeiro
+        const logEntries = data.split('\n').filter(Boolean).reverse();
         res.json({ log: logEntries });
     });
 });
 
 // Rota para baixar o log
 app.get('/download-log', checkAuth, (req, res) => {
-    res.download(logFilePath, 'correio-elegante-historico.log', (err) => {
-        if (err) {
-            // Se o arquivo não existir, envia uma mensagem amigável
-            if (err.code === 'ENOENT') {
-                return res.status(404).send('Nenhum histórico para baixar ainda.');
+    if (fs.existsSync(logFilePath)) {
+        return res.download(logFilePath, 'correio-elegante-historico.log', (err) => {
+            if (err) {
+                console.error("Erro ao baixar o log:", err);
+                res.status(500).send("Não foi possível baixar o log.");
             }
-            console.error("Erro ao baixar o log:", err);
-            res.status(500).send("Não foi possível baixar o log.");
-        }
-    });
+        });
+    }
+
+    const content = messageLog.map(formatLogEntry).join('\n');
+    if (!content) {
+        return res.status(404).send('Nenhum histórico para baixar ainda.');
+    }
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Content-Disposition', 'attachment; filename=correio-elegante-historico.log');
+    res.send(content);
 });
 
 // Rota para limpar o log
 app.post('/clear-log', checkAuth, (req, res) => {
+    messageLog = [];
     fs.truncate(logFilePath, 0, (err) => {
-        if (err && err.code !== 'ENOENT') { // Ignora erro se o arquivo não existe
+        if (err && err.code !== 'ENOENT') {
             console.error("Erro ao limpar o log:", err);
             return res.status(500).json({ success: false, message: "Falha ao limpar o histórico." });
         }
@@ -201,14 +209,12 @@ app.get('/logout', (req, res) => {
 });
 
 // Função para salvar uma mensagem no arquivo de log
-const appendToLogFile = (message) => {
+const formatLogEntry = (message) => {
     const timestamp = new Date(message.timestamp).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-    
-    // Melhor detecção de dispositivo usando user-agent
     const userAgent = message.userAgent || '';
     const ua = useragent.parse(userAgent);
     let deviceInfo = 'Desconhecido';
-    
+
     try {
         if (ua.isMobile) {
             const deviceName = (ua.device && ua.device.family) ? ua.device.family : 'Celular';
@@ -223,8 +229,7 @@ const appendToLogFile = (message) => {
             const osName = (ua.os && ua.os.family) ? ua.os.family : 'Tablet';
             deviceInfo = `📱 ${deviceName} - ${osName}`;
         }
-        
-        // Adiciona informações do navegador se disponível
+
         if (ua.browser && ua.browser.family && ua.browser.major) {
             deviceInfo += ` (${ua.browser.family} ${ua.browser.major})`;
         }
@@ -232,9 +237,12 @@ const appendToLogFile = (message) => {
         console.error('Erro ao processar user-agent:', error);
         deviceInfo = '📱 Dispositivo Móvel';
     }
-    
-    const logEntry = `[${timestamp}] [IP: ${message.ip}] [${deviceInfo}] Para: "${message.recipient}" | De: "${message.sender}" | Mensagem: "${message.message}"\n`;
-    
+
+    return `[${timestamp}] [IP: ${message.ip}] [${deviceInfo}] Para: "${message.recipient}" | De: "${message.sender}" | Mensagem: "${message.message}"`;
+};
+
+const appendToLogFile = (message) => {
+    const logEntry = formatLogEntry(message) + '\n';
     fs.appendFile(logFilePath, logEntry, (err) => {
         if (err) {
             console.error('Erro ao escrever no arquivo de log:', err);
@@ -386,31 +394,22 @@ const updateClientsAdmin = () => {
 // Função para enviar as estatísticas atualizadas
 const updateStatsAdmin = () => {
     try {
-        const data = fs.readFileSync(logFilePath, 'utf8');
-        const lines = data.split('\n').filter(Boolean);
-        
-        // Calcular mensagens populares
+        const lines = messageLog;
+
         const messageCounts = {};
-        lines.forEach(line => {
-            const match = line.match(/Mensagem: "([^"]*)"/);
-            if (match && match[1]) {
-                const msg = match[1];
-                messageCounts[msg] = (messageCounts[msg] || 0) + 1;
-            }
+        lines.forEach(msg => {
+            const m = msg.message;
+            messageCounts[m] = (messageCounts[m] || 0) + 1;
         });
         const sortedMessages = Object.entries(messageCounts)
             .sort(([, a], [, b]) => b - a)
             .slice(0, 5);
         stats.popularMessages = sortedMessages.map(([message, count]) => ({ message, count }));
 
-        // Calcular destinatários mais populares
         const recipientCounts = {};
-        lines.forEach(line => {
-            const match = line.match(/Para: "([^"]*)"/);
-            if (match && match[1]) {
-                const recipient = match[1];
-                recipientCounts[recipient] = (recipientCounts[recipient] || 0) + 1;
-            }
+        lines.forEach(msg => {
+            const recipient = msg.recipient.trim();
+            recipientCounts[recipient] = (recipientCounts[recipient] || 0) + 1;
         });
         const sortedRecipients = Object.entries(recipientCounts)
             .sort(([, a], [, b]) => b - a)
@@ -420,10 +419,7 @@ const updateStatsAdmin = () => {
         stats.totalMessages = lines.length;
 
     } catch (err) {
-        if (err.code !== 'ENOENT') {
-            console.error("Erro ao processar estatísticas:", err);
-        }
-        // Garante que as propriedades existam mesmo com erro
+        console.error("Erro ao processar estatísticas:", err);
         stats.popularMessages = [];
         stats.topRecipients = [];
         stats.totalMessages = 0;
@@ -567,6 +563,9 @@ io.on('connection', (socket) => {
         
         messageQueue.push(fullMessage);
         messageLog.push(fullMessage);
+        if (messageLog.length > MAX_LOG_SIZE) {
+            messageLog.shift();
+        }
         appendToLogFile(fullMessage);
         log(`Mensagem adicionada à fila. Fila agora com: ${messageQueue.length} item(s).`);
 
