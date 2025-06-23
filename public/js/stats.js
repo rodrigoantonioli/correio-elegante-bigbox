@@ -11,8 +11,23 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Conectar à sala de stats no servidor
     socket.on('connect', () => {
-        socket.emit('register', '/stats');
+        console.log('Conectado ao servidor de estatísticas');
+        socket.emit('register', 'stats_admin');
         socket.emit('join_stats_admin');
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Desconectado do servidor');
+        totalMessagesEl.textContent = 'Desconectado';
+        currentClientsEl.textContent = 'N/A';
+        peakClientsEl.textContent = 'N/A';
+    });
+
+    socket.on('connect_error', (error) => {
+        console.error('Erro de conexão:', error);
+        totalMessagesEl.textContent = 'Erro';
+        currentClientsEl.textContent = 'Erro';
+        peakClientsEl.textContent = 'Erro';
     });
 
     // Ouvir atualizações de estatísticas

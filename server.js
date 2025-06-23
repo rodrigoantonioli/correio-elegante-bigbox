@@ -35,7 +35,15 @@ app.use(cookieSession({
     secure: process.env.NODE_ENV === 'production'
 }));
 
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            "script-src": ["'self'", "'unsafe-inline'"],
+            "style-src": ["'self'", "'unsafe-inline'"],
+        },
+    },
+}));
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
@@ -73,9 +81,15 @@ const log = (message) => {
 
 // Middleware de autenticação
 const checkAuth = (req, res, next) => {
+    console.log('checkAuth - Verificando autenticação');
+    console.log('checkAuth - req.session:', req.session);
+    console.log('checkAuth - req.session.isAdmin:', req.session.isAdmin);
+    
     if (req.session.isAdmin) {
+        console.log('checkAuth - Usuário autenticado');
         return next();
     }
+    console.log('checkAuth - Redirecionando para login');
     res.redirect('/login');
 };
 
@@ -155,16 +169,23 @@ app.get('/history', checkAuth, (req, res) => {
 
 // Nova rota de API para buscar o conteúdo do log, agora processado
 app.get('/api/history', checkAuth, (req, res) => {
+    console.log('API /api/history chamada');
+    console.log('Sessão:', req.session);
+    console.log('isAdmin:', req.session.isAdmin);
+    
     fs.readFile(logFilePath, 'utf8', (err, data) => {
         if (err) {
             if (err.code === 'ENOENT') {
+                console.log('Arquivo de log não existe, retornando do messageLog');
                 const fromMemory = messageLog.map(formatLogEntry).reverse();
                 return res.json({ log: fromMemory });
             }
             console.error('Erro ao ler arquivo de log:', err);
             return res.status(500).json({ error: 'Erro ao ler o log.' });
         }
+        console.log('Arquivo de log lido com sucesso');
         const logEntries = data.split('\n').filter(Boolean).reverse();
+        console.log(`Retornando ${logEntries.length} entradas de log`);
         res.json({ log: logEntries });
     });
 });
@@ -374,6 +395,9 @@ const getPageDisplayName = (page) => {
 
 // Função para enviar a lista de clientes atualizada para o admin de clientes
 const updateClientsAdmin = () => {
+    console.log(`updateClientsAdmin chamada. Clientes conectados: ${Object.keys(connectedClients).length}`);
+    console.log('Clientes:', connectedClients);
+    
     const clientsData = Object.values(connectedClients).map(client => {
         const ua = useragent.parse(client.userAgent || '');
         return {
@@ -388,6 +412,8 @@ const updateClientsAdmin = () => {
         clients: clientsData,
         blocked: Array.from(blockedIps)
     };
+    
+    console.log(`Enviando atualização para sala clients_admin_room:`, payload);
     io.to('clients_admin_room').emit('clientsUpdate', payload);
 };
 
@@ -512,6 +538,8 @@ io.on('connection', (socket) => {
 
     // Evento para o cliente se registrar e informar a página
     socket.on('register', (page) => {
+        console.log(`Cliente ${socket.id} se registrando na página: ${page}`);
+        
         if (connectedClients[socket.id]) {
             connectedClients[socket.id].page = page;
         }
@@ -522,12 +550,14 @@ io.on('connection', (socket) => {
         // Se for a página de monitoramento, coloca numa sala especial
         if (page === 'clients_admin') {
             socket.join('clients_admin_room');
+            console.log(`Cliente ${socket.id} entrou na sala clients_admin_room`);
             // Envia a lista completa assim que ele se registra
             updateClientsAdmin();
         }
         // Se for a página de estatísticas, coloca numa sala especial
         if (page === 'stats_admin') {
             socket.join('stats_admin_room');
+            console.log(`Cliente ${socket.id} entrou na sala stats_admin_room`);
             updateStatsAdmin(); // Envia os dados atuais
         }
         if (page === '/display') {
@@ -665,6 +695,16 @@ io.on('connection', (socket) => {
         console.log('Um admin entrou na sala de estatísticas');
         // Envia os dados atuais imediatamente para o novo admin
         updateStatsAdmin();
+    });
+});
+
+// Rota de teste para verificar sessão
+app.get('/api/check-auth', (req, res) => {
+    console.log('Check-auth chamada');
+    console.log('Session:', req.session);
+    res.json({
+        authenticated: !!req.session.isAdmin,
+        session: req.session
     });
 });
 

@@ -154,6 +154,8 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('Página de clientes carregada');
+            
             const socket = io();
             const clientsList = document.getElementById('clients-list');
             const clientsCount = document.getElementById('clients-count');
@@ -161,11 +163,26 @@
             const blockedCount = document.getElementById('blocked-count');
 
             socket.on('connect', () => {
-                socket.emit('register', '/clients');
+                console.log('Conectado ao servidor');
+                socket.emit('register', 'clients_admin');
                 socket.emit('join_clients_admin');
             });
 
+            socket.on('disconnect', () => {
+                console.log('Desconectado do servidor');
+                clientsList.innerHTML = '<tr><td colspan="5" class="text-center">Desconectado do servidor. Tentando reconectar...</td></tr>';
+                blockedIpsList.innerHTML = '<tr><td colspan="2" class="text-center">Desconectado do servidor. Tentando reconectar...</td></tr>';
+            });
+
+            socket.on('connect_error', (error) => {
+                console.error('Erro de conexão:', error);
+                clientsList.innerHTML = '<tr><td colspan="5" class="text-center">Erro de conexão com o servidor.</td></tr>';
+                blockedIpsList.innerHTML = '<tr><td colspan="2" class="text-center">Erro de conexão com o servidor.</td></tr>';
+            });
+
             socket.on('clientsUpdate', (data) => {
+                console.log('Recebendo atualização de clientes:', data);
+                
                 // Atualiza lista de clientes conectados
                 clientsList.innerHTML = '';
                 const clients = data.clients || [];
