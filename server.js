@@ -2,7 +2,6 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const fs = require('fs');
-const fsPromises = fs.promises;
 const path = require('path');
 const cookieSession = require('cookie-session');
 const useragent = require('express-useragent');
@@ -244,20 +243,22 @@ const appendToLogFile = (message) => {
 };
 
 // Função para ler as mensagens prontas do arquivo
-const readPredefinedMessages = async () => {
+const readPredefinedMessages = () => {
     try {
-        const data = await fsPromises.readFile(messagesFilePath, 'utf8');
-        try {
-            return JSON.parse(data);
-        } catch (parseError) {
-            console.error('Erro ao fazer parse de messages.json:', parseError);
+        if (fs.existsSync(messagesFilePath)) {
+            const data = fs.readFileSync(messagesFilePath, 'utf8');
+            // Adiciona um try-catch interno para o parse, caso o arquivo esteja corrompido
+            try {
+                return JSON.parse(data);
+            } catch (parseError) {
+                console.error('Erro ao fazer parse de messages.json:', parseError);
+                // Se o parse falhar, retorna as mensagens padrão para não quebrar o servidor
+            }
         }
     } catch (readError) {
-        if (readError.code !== 'ENOENT') {
-            console.error('Erro ao ler messages.json:', readError);
-        }
+        console.error('Erro ao ler messages.json:', readError);
     }
-    // Retorna mensagens padrão se o arquivo não existir ou der erro
+    // Retorna mensagens padrão se o arquivo não existir ou derro
     return [
         "Sua beleza é como um bug no meu coração, impossível de ignorar!",
         "Se beleza desse cadeia, você pegaria prisão perpétua.",
@@ -267,11 +268,7 @@ const readPredefinedMessages = async () => {
     ];
 };
 
-let predefinedMessages = [];
-
-(async () => {
-    predefinedMessages = await readPredefinedMessages();
-})();
+let predefinedMessages = readPredefinedMessages();
 
 // Função para calcular o Top 5
 const calculateTopRecipients = () => {
@@ -387,9 +384,9 @@ const updateClientsAdmin = () => {
 };
 
 // Função para enviar as estatísticas atualizadas
-const updateStatsAdmin = async () => {
+const updateStatsAdmin = () => {
     try {
-        const data = await fsPromises.readFile(logFilePath, 'utf8');
+        const data = fs.readFileSync(logFilePath, 'utf8');
         const lines = data.split('\n').filter(Boolean);
         
         // Calcular mensagens populares
@@ -599,10 +596,10 @@ io.on('connection', (socket) => {
         socket.emit('updateMessages', predefinedMessages);
     });
 
-    socket.on('updateMessages', async (newMessages) => {
+    socket.on('updateMessages', (newMessages) => {
         predefinedMessages = newMessages;
         try {
-            await fsPromises.writeFile(messagesFilePath, JSON.stringify(newMessages, null, 2));
+            fs.writeFileSync(messagesFilePath, JSON.stringify(newMessages, null, 2));
             console.log('Mensagens prontas atualizadas e salvas.');
             io.emit('updateMessages', predefinedMessages); // Envia para todos os clientes
         } catch (error) {
