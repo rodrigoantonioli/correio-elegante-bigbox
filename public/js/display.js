@@ -153,6 +153,17 @@ document.addEventListener('DOMContentLoaded', () => {
         defaultRecipientSpan.textContent = msg.recipient;
         defaultMessageSpan.textContent = msg.message;
         defaultSenderSpan.textContent = msg.sender;
+
+        // Adiciona a hora formatada
+        const time = new Date(msg.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const timeEl = document.createElement('p');
+        timeEl.className = 'timestamp';
+        timeEl.textContent = `Enviado às ${time}`;
+        // Limpa timestamp antigo e adiciona o novo
+        const oldTime = defaultMessageSpan.parentNode.querySelector('.timestamp');
+        if(oldTime) oldTime.remove();
+        defaultMessageSpan.parentNode.appendChild(timeEl);
+
         adjustFontSize(defaultMessageSpan, msg.message);
     };
 
@@ -160,11 +171,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (index < 0 || index >= displayedHistory.length) return;
         carouselIndex = index;
         const msg = displayedHistory[index];
+        const time = new Date(msg.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         carouselSlide.innerHTML = `
             <div class="message-card">
                 <p class="recipient">Para: <span>${msg.recipient}</span></p>
                 <p class="message-text">"<span>${msg.message}</span>"</p>
                 <p class="sender">De: <span>${msg.sender}</span></p>
+                <p class="timestamp">Enviado às ${time}</p>
                 <button class="carousel-speak-btn" aria-label="Ler mensagem"><i class="fas fa-volume-up"></i></button>
             </div>
         `;
@@ -317,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     socket.on('enterHistoryMode', (data) => {
         log('Recebida instrução do servidor para entrar em modo de memórias.');
-        renderHistoryScreen(data.history, data.top5);
+        renderHistoryScreen(data.history);
     });
 
     // --- Listeners de Eventos ---
@@ -457,67 +470,54 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const historyPlaybackScreen = document.getElementById('history-playback-screen');
-    const top5List = document.getElementById('top-5-list');
-    const bubblesContainer = document.getElementById('message-bubbles-container');
+    const historyContainer = document.getElementById('history-messages-container');
     let historyAnimationInterval = null;
 
-    const renderHistoryScreen = (history, top5) => {
+    const renderHistoryScreen = (history) => {
         setScreenState('history');
-        
-        // 1. Renderiza o Top 5
-        top5List.innerHTML = '';
-        if (top5 && top5.length > 0) {
-            top5.forEach(item => {
-                const li = document.createElement('li');
-                li.innerHTML = `<span>${item.rank}. ${item.name}</span> <strong>(${item.count})</strong>`;
-                top5List.appendChild(li);
-            });
-            document.getElementById('history-ranking').classList.remove('hidden');
-        } else {
-            document.getElementById('history-ranking').classList.add('hidden');
-        }
+        historyContainer.innerHTML = '';
+        if (!history || history.length === 0) return;
 
-        // 2. Gera o QR Code
+        // Gera o QR Code para o painel superior
         const qrCanvasHistory = document.getElementById('qr-code-history');
         if (qrCanvasHistory) {
             let url = window.location.origin;
             if (window.location.hostname.includes('onrender.com')) {
                 url = 'https://correio-elegante-bigbox.onrender.com';
             }
-            QRCode.toCanvas(qrCanvasHistory, url, { width: 150, margin: 1 }, (e) => {
+            QRCode.toCanvas(qrCanvasHistory, url, { width: 100, margin: 1, errorCorrectionLevel: 'Q' }, (e) => {
                 if (e) console.error("Erro ao gerar QR de histórico:", e);
             });
         }
 
-        // 3. Inicia a animação dos balões
-        if (history && history.length > 0) {
-            historyAnimationInterval = setInterval(() => {
-                createMessageBubble(history[Math.floor(Math.random() * history.length)]);
-            }, 2000); // Cria um novo balão a cada 2 segundos
+        const numColumns = Math.min(Math.floor(window.innerWidth / 500), 4);
+        const columns = [];
+        for (let i = 0; i < numColumns; i++) {
+            const colDiv = document.createElement('div');
+            colDiv.className = 'history-column';
+            columns.push(colDiv);
+            historyContainer.appendChild(colDiv);
         }
+
+        // Distribui as mensagens nas colunas
+        history.forEach((msg, index) => {
+            const colIndex = index % numColumns;
+            columns[colIndex].appendChild(createHistoryCard(msg));
+        });
     };
 
-    const createMessageBubble = (msg) => {
-        const bubble = document.createElement('div');
-        bubble.className = 'message-bubble';
+    const createHistoryCard = (msg) => {
+        const card = document.createElement('div');
+        card.className = 'history-message-card';
         
         const time = new Date(msg.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         
-        bubble.innerHTML = `
-            <p class="msg-text">Para: <strong>${msg.recipient}</strong></p>
-            <p class="msg-text">"${msg.message}"</p>
-            <p class="msg-details">De: ${msg.sender} (${time})</p>
+        card.innerHTML = `
+            <p class="recipient">Para: <strong>${msg.recipient}</strong></p>
+            <p class="message">"${msg.message}"</p>
+            <p class="sender">De: <strong>${msg.sender}</strong></p>
+            <p class="timestamp">${time}</p>
         `;
-
-        // Posição e delay aleatórios
-        bubble.style.left = `${Math.random() * 85}%`;
-        bubble.style.animationDelay = `${Math.random() * 5}s`;
-
-        bubblesContainer.appendChild(bubble);
-
-        // Remove o balão depois que a animação termina para não sobrecarregar o DOM
-        setTimeout(() => {
-            bubble.remove();
-        }, 15000); // Duração da animação
+        return card;
     };
 }); 

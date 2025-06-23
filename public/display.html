@@ -84,20 +84,20 @@
 
         <!-- MODO DE MEMÓRIAS (TELA CHEIA) -->
         <div id="history-playback-screen" class="hidden">
-            <div id="history-content">
-                <div id="history-top-panel">
-                    <div id="history-ranking">
-                        <h2>🏆 Top 5 Homenageados</h2>
-                        <ol id="top-5-list"></ol>
-                    </div>
-                    <div id="history-qr-code">
-                        <h3>Envie a sua!</h3>
-                        <canvas id="qr-code-history"></canvas>
-                    </div>
+            <div id="history-top-panel">
+                <div class="top-panel-item qr-container">
+                    <p>Aponte para enviar!</p>
+                    <canvas id="qr-code-history"></canvas>
                 </div>
-                <div id="message-bubbles-container">
-                    <!-- Balões de mensagens serão injetados aqui via JS -->
+                <div class="top-panel-item logo-container">
+                    <img src="/images/logo.png" alt="Big Arraiá Ultra Bão" class="history-logo">
                 </div>
+                <div class="top-panel-item">
+                    <!-- Espaço para alinhar -->
+                </div>
+            </div>
+            <div id="history-messages-container">
+                <!-- As mensagens que sobem aparecerão aqui -->
             </div>
         </div>
     </div>
