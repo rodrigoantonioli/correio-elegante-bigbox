@@ -82,15 +82,10 @@ const log = (message) => {
 
 // Middleware de autenticação
 const checkAuth = (req, res, next) => {
-    console.log('checkAuth - Verificando autenticação');
-    console.log('checkAuth - req.session:', req.session);
-    console.log('checkAuth - req.session.isAdmin:', req.session.isAdmin);
-    
     if (req.session.isAdmin) {
-        console.log('checkAuth - Usuário autenticado');
         return next();
     }
-    console.log('checkAuth - Redirecionando para login');
+    log('Tentativa de acesso não autorizada. Redirecionando para login.');
     res.redirect('/login');
 };
 
@@ -125,19 +120,14 @@ app.get('/login', (req, res) => {
 // Rota de Login
 app.post('/login', (req, res) => {
     const inputPassword = req.body.password;
-    log(`Tentativa de login com senha: "${inputPassword}"`);
-    console.log(`- Senha enviada: "${inputPassword}"`);
-    console.log(`- Senha esperada: "${ADMIN_PASSWORD}"`);
-    console.log(`- Senhas iguais: ${inputPassword === ADMIN_PASSWORD}`);
-    console.log(`- Tipo senha enviada: ${typeof inputPassword}`);
-    console.log(`- Tipo senha esperada: ${typeof ADMIN_PASSWORD}`);
-    
+    log('Tentativa de login recebida.');
+
     if (inputPassword === ADMIN_PASSWORD) {
-        log('✅ Login bem-sucedido!');
+        log('Login bem-sucedido.');
         req.session.isAdmin = true;
         res.redirect('/admin');
     } else {
-        console.log('❌ Login falhou - senha incorreta');
+        log('Login falhou - senha incorreta.');
         res.redirect('/login?error=1');
     }
 });
@@ -170,23 +160,18 @@ app.get('/history', checkAuth, (req, res) => {
 
 // Nova rota de API para buscar o conteúdo do log, agora processado
 app.get('/api/history', checkAuth, (req, res) => {
-    console.log('API /api/history chamada');
-    console.log('Sessão:', req.session);
-    console.log('isAdmin:', req.session.isAdmin);
+    log('Histórico de mensagens solicitado.');
     
     fs.readFile(logFilePath, 'utf8', (err, data) => {
         if (err) {
             if (err.code === 'ENOENT') {
-                console.log('Arquivo de log não existe, retornando do messageLog');
                 const fromMemory = messageLog.map(formatLogEntry).reverse();
                 return res.json({ log: fromMemory });
             }
             console.error('Erro ao ler arquivo de log:', err);
             return res.status(500).json({ error: 'Erro ao ler o log.' });
         }
-        console.log('Arquivo de log lido com sucesso');
         const logEntries = data.split('\n').filter(Boolean).reverse();
-        console.log(`Retornando ${logEntries.length} entradas de log`);
         res.json({ log: logEntries });
     });
 });
@@ -219,7 +204,7 @@ app.post('/clear-log', checkAuth, (req, res) => {
             console.error("Erro ao limpar o log:", err);
             return res.status(500).json({ success: false, message: "Falha ao limpar o histórico." });
         }
-        console.log('Histórico de mensagens limpo pelo administrador.');
+        log('Histórico de mensagens limpo pelo administrador.');
         res.json({ success: true, message: "Histórico limpo com sucesso!" });
     });
 });
@@ -417,8 +402,7 @@ const getPageDisplayName = (page) => {
 
 // Função para enviar a lista de clientes atualizada para o admin de clientes
 const updateClientsAdmin = () => {
-    console.log(`updateClientsAdmin chamada. Clientes conectados: ${Object.keys(connectedClients).length}`);
-    console.log('Clientes:', connectedClients);
+    log(`Atualizando lista de clientes. Conectados: ${Object.keys(connectedClients).length}`);
     
     const clientsData = Object.values(connectedClients).map(client => {
         const ua = useragent.parse(client.userAgent || '');
@@ -435,7 +419,6 @@ const updateClientsAdmin = () => {
         blocked: Array.from(blockedIps)
     };
     
-    console.log(`Enviando atualização para sala clients_admin_room:`, payload);
     io.to('clients_admin_room').emit('clientsUpdate', payload);
 };
 
@@ -489,7 +472,7 @@ io.on('connection', (socket) => {
 
     // Middleware de bloqueio para Socket.IO
     if (blockedIps.has(ip)) {
-        console.log(`Conexão recusada do IP bloqueado: ${ip}`);
+        log(`Conexão recusada do IP bloqueado: ${ip}`);
         return socket.disconnect();
     }
     
@@ -562,7 +545,7 @@ io.on('connection', (socket) => {
 
     // Evento para o cliente se registrar e informar a página
     socket.on('register', (page) => {
-        console.log(`Cliente ${socket.id} se registrando na página: ${page}`);
+        log(`Cliente ${socket.id} se registrou na página: ${page}`);
         
         if (connectedClients[socket.id]) {
             connectedClients[socket.id].page = page;
@@ -574,14 +557,14 @@ io.on('connection', (socket) => {
         // Se for a página de monitoramento, coloca numa sala especial
         if (page === 'clients_admin') {
             socket.join('clients_admin_room');
-            console.log(`Cliente ${socket.id} entrou na sala clients_admin_room`);
+            log(`Cliente ${socket.id} entrou na sala clients_admin_room`);
             // Envia a lista completa assim que ele se registra
             updateClientsAdmin();
         }
         // Se for a página de estatísticas, coloca numa sala especial
         if (page === 'stats_admin') {
             socket.join('stats_admin_room');
-            console.log(`Cliente ${socket.id} entrou na sala stats_admin_room`);
+            log(`Cliente ${socket.id} entrou na sala stats_admin_room`);
             updateStatsAdmin(); // Envia os dados atuais
         }
         if (page === '/display') {
@@ -663,7 +646,7 @@ io.on('connection', (socket) => {
                 messagesFilePath,
                 JSON.stringify({ categories: messageCategories, messages: predefinedMessages }, null, 2)
             );
-            console.log('Configurações de mensagens atualizadas e salvas.');
+            log('Configurações de mensagens atualizadas e salvas.');
             io.emit('updateConfig', {
                 categories: messageCategories,
                 messages: predefinedMessages
@@ -678,7 +661,7 @@ io.on('connection', (socket) => {
     socket.on('blockIp', (ipToBlock) => {
         if (ipToBlock) {
             blockedIps.add(ipToBlock);
-            console.log(`IP ${ipToBlock} bloqueado pelo administrador.`);
+            log(`IP ${ipToBlock} bloqueado pelo administrador.`);
 
             // Desconecta todos os sockets com este IP
             for (const id in connectedClients) {
@@ -698,13 +681,13 @@ io.on('connection', (socket) => {
     socket.on('unblockIp', (ipToUnblock) => {
         if (ipToUnblock) {
             blockedIps.delete(ipToUnblock);
-            console.log(`IP ${ipToUnblock} desbloqueado pelo administrador.`);
+            log(`IP ${ipToUnblock} desbloqueado pelo administrador.`);
             updateClientsAdmin(); // Atualiza a lista de bloqueados para os admins
         }
     });
 
     socket.on('disconnect', () => {
-        console.log(`Cliente ${socket.id} (IP: ${ip}) desconectado.`);
+        log(`Cliente ${socket.id} (IP: ${ip}) desconectado.`);
         delete connectedClients[socket.id];
         updateClientsAdmin();
         updateStatsAdmin();
@@ -713,14 +696,14 @@ io.on('connection', (socket) => {
     // Evento para quando um admin entra na página de monitoramento
     socket.on('join_clients_admin', () => {
         socket.join('clients_admin_room');
-        console.log('Um admin entrou na sala de monitoramento');
+        log('Um admin entrou na sala de monitoramento');
         updateClientsAdmin();
     });
 
     // Evento para quando um admin entra na página de estatísticas
     socket.on('join_stats_admin', () => {
         socket.join('stats_admin_room');
-        console.log('Um admin entrou na sala de estatísticas');
+        log('Um admin entrou na sala de estatísticas');
         // Envia os dados atuais imediatamente para o novo admin
         updateStatsAdmin();
     });
@@ -728,8 +711,6 @@ io.on('connection', (socket) => {
 
 // Rota de teste para verificar sessão
 app.get('/api/check-auth', (req, res) => {
-    console.log('Check-auth chamada');
-    console.log('Session:', req.session);
     res.json({
         authenticated: !!req.session.isAdmin,
         session: req.session
@@ -739,19 +720,19 @@ app.get('/api/check-auth', (req, res) => {
 if (require.main === module) {
     server.listen(PORT, '0.0.0.0', () => {
         const baseUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
-        console.log(`Servidor rodando na porta ${PORT}`);
-        console.log("---------------------------------------");
-        console.log("Páginas disponíveis:");
+        log(`Servidor rodando na porta ${PORT}`);
+        console.log('---------------------------------------');
+        console.log('Páginas disponíveis:');
         console.log(`- Envio de Mensagens: ${baseUrl}`);
         console.log(`- Telão: ${baseUrl}/display`);
         console.log(`- Login Admin: ${baseUrl}/login`);
-        console.log("---------------------------------------");
-        console.log("Área de Administração (requer login):");
+        console.log('---------------------------------------');
+        console.log('Área de Administração (requer login):');
         console.log(`- Painel Principal: ${baseUrl}/admin`);
         console.log(`- Histórico: ${baseUrl}/history`);
         console.log(`- Monitoramento: ${baseUrl}/clients`);
         console.log(`- Estatísticas: ${baseUrl}/stats`);
-        console.log("---------------------------------------");
+        console.log('---------------------------------------');
         if (process.env.RENDER_EXTERNAL_URL) {
             console.log(`URL Pública (se aplicável): ${process.env.RENDER_EXTERNAL_URL}`);
         }
