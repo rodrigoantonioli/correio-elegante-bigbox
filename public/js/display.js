@@ -19,21 +19,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const incentivePhraseEl = document.getElementById('incentive-phrase');
     const totalCountEl = document.getElementById('total-count');
 
-    // --- Elementos dos Modos (Default, Carousel, Ticker) ---
-    const modeContainers = document.querySelectorAll('.mode-container');
+    // --- Elementos do Modo Padrão ---
     const defaultRecipientSpan = document.getElementById('display-recipient');
     const defaultMessageSpan = document.getElementById('display-message');
     const defaultSenderSpan = document.getElementById('display-sender');
-    const carouselSlide = document.getElementById('carousel-slide');
-    const carouselPrevBtn = document.getElementById('carousel-prev');
-    const carouselNextBtn = document.getElementById('carousel-next');
-    const tickerContent = document.getElementById('ticker-content');
 
     // --- Estado do Display ---
-    let currentMode = 'default';
     let displayedHistory = [];
-    let carouselIndex = -1;
-    let carouselTimeout;
     let currentMessageTimeout;
     let minDisplayTimeout; // Novo temporizador para o tempo mínimo
     let messageStartTime = null;
@@ -95,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
             clearInterval(historyAnimationInterval);
             historyAnimationInterval = null;
         }
-        if (currentMode === 'ticker') tickerContent.classList.remove('animate');
 
         if (state === 'waiting') {
             waitingScreen.classList.remove('hidden');
@@ -167,56 +158,11 @@ document.addEventListener('DOMContentLoaded', () => {
         adjustFontSize(defaultMessageSpan, msg.message);
     };
 
-    const renderCarousel = (index) => {
-        if (index < 0 || index >= displayedHistory.length) return;
-        carouselIndex = index;
-        const msg = displayedHistory[index];
-        const time = new Date(msg.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        carouselSlide.innerHTML = `
-            <div class="message-card">
-                <p class="recipient">Para: <span>${msg.recipient}</span></p>
-                <p class="message-text">"<span>${msg.message}</span>"</p>
-                <p class="sender">De: <span>${msg.sender}</span></p>
-                <p class="timestamp">Enviado às ${time}</p>
-                <button class="carousel-speak-btn" aria-label="Ler mensagem"><i class="fas fa-volume-up"></i></button>
-            </div>
-        `;
-        adjustFontSize(carouselSlide.querySelector('.message-text > span'), msg.message);
-        carouselPrevBtn.style.visibility = (index > 0) ? 'visible' : 'hidden';
-        carouselNextBtn.style.visibility = (index < displayedHistory.length - 1) ? 'visible' : 'hidden';
-    };
-
-    const renderTicker = (msg) => {
-        tickerContent.innerHTML = `Para: <strong>${msg.recipient}</strong> — "${msg.message}" — De: <strong>${msg.sender}</strong>`;
-        const speedFactor = 0.08; // segundos por caracter
-        const duration = tickerContent.textContent.length * speedFactor;
-        tickerContent.style.animationDuration = `${Math.max(10, duration)}s`;
-        tickerContent.classList.add('animate');
-    };
-
     // --- Controle de Exibição ---
-    const switchMode = (newMode) => {
-        currentMode = newMode;
-        modeContainers.forEach(c => c.classList.add('hidden'));
-        const activeContainer = document.getElementById(`${newMode}-mode-container`);
-        if (activeContainer) activeContainer.classList.remove('hidden');
-        console.log(`Modo alterado para: ${newMode}`);
-    };
 
     const startDisplay = (msg, duration) => {
         setScreenState('message');
-        switch (currentMode) {
-            case 'default':
-                renderDefault(msg);
-                break;
-            case 'carousel':
-                renderCarousel(displayedHistory.length - 1);
-                clearTimeout(carouselTimeout); // Para o timer de auto-avanço se uma nova msg chegar
-                break;
-            case 'ticker':
-                renderTicker(msg);
-                break;
-        }
+        renderDefault(msg);
         const fullText = `Correio Elegante para ${msg.recipient}. A mensagem é: ${msg.message}. Enviado por: ${msg.sender}.`;
         speakMessage(fullText);
         
@@ -264,7 +210,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Listeners de Socket ---
     socket.on('initialState', state => {
         console.log("Estado inicial recebido:", state);
-        switchMode(state.displayMode);
         displayedHistory = state.displayedHistory || [];
         totalMessages = state.totalMessages || 0; // Garante que seja um número
         updateTotalMessagesDisplay();
@@ -289,7 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
             setScreenState('waiting');
         }
     });
-    socket.on('modeUpdate', newMode => switchMode(newMode));
     socket.on('displayMessage', data => {
         log(`Recebida nova mensagem do servidor (ID: ${data.message.id}).`);
         totalMessages = data.totalMessages || 0;
@@ -333,28 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHistoryScreen(data.history);
     });
 
-    // --- Listeners de Eventos ---
-    carouselPrevBtn.addEventListener('click', () => {
-        clearTimeout(carouselTimeout);
-        if (carouselIndex > 0) renderCarousel(carouselIndex - 1);
-    });
-    carouselNextBtn.addEventListener('click', () => {
-        clearTimeout(carouselTimeout);
-        if (carouselIndex < displayedHistory.length - 1) renderCarousel(carouselIndex + 1);
-    });
-    carouselSlide.addEventListener('click', (event) => {
-        const speakBtn = event.target.closest('.carousel-speak-btn');
-        if (speakBtn) {
-            clearTimeout(carouselTimeout);
-            const msg = displayedHistory[carouselIndex];
-            const text = `Para ${msg.recipient}, ${msg.message}, de ${msg.sender}.`;
-            speakMessage(text);
-            
-            // Feedback visual no botão
-            speakBtn.classList.add('speaking');
-            setTimeout(() => speakBtn.classList.remove('speaking'), 1000);
-        }
-    });
+
 
     // --- Função para atualizar display de mensagens com singular/plural correto ---
     const updateTotalMessagesDisplay = () => {
