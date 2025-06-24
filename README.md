@@ -4,7 +4,7 @@ Um sistema completo e moderno de Correio Elegante, perfeito para festas juninas,
 
 Esta versão foi aprimorada com foco em auditoria, estabilidade e uma experiência visual mais elegante.
 
-![Telão](https://i.imgur.com/example.png)  <!-- Sugestão: Tire um print da tela final e substitua o link -->
+![Telão](docs/images/tela-principal.png)
 
 ## ✨ Funcionalidades Principais
 
