@@ -244,7 +244,15 @@ const formatLogEntry = (message) => {
         deviceInfo = '📱 Dispositivo Móvel';
     }
 
-    return `[${timestamp}] [IP: ${message.ip}] [${deviceInfo}] Para: "${message.recipient}" | De: "${message.sender}" | Mensagem: "${message.message}"`;
+    // Formato JSON compacto para economizar espaço no Gist
+    return JSON.stringify({
+        t: timestamp,
+        ip: message.ip,
+        d: deviceInfo,
+        to: message.recipient,
+        from: message.sender,
+        msg: message.message
+    });
 };
 
 const appendToLogFile = (message) => {
@@ -720,6 +728,32 @@ if (require.main === module) {
     server.listen(PORT, '0.0.0.0', () => {
         const baseUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
         log(`Servidor rodando na porta ${PORT}`);
+        
+        // Log de inicialização para o Gist
+        const startupTime = new Date();
+        const startupLog = `\n=== SERVIDOR INICIADO ===\n` +
+            `Data/Hora: ${startupTime.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}\n` +
+            `Ambiente: ${process.env.NODE_ENV || 'development'}\n` +
+            `Porta: ${PORT}\n` +
+            `URL Base: ${baseUrl}\n` +
+            `Plataforma: ${process.platform}\n` +
+            `Node.js: ${process.version}\n` +
+            `========================\n\n`;
+        
+        // Salva o log de inicialização no Gist
+        if (appendToGist) {
+            appendToGist(startupLog).catch(err => {
+                console.error('Falha ao registrar inicialização no log remoto:', err.message);
+            });
+        }
+        
+        // Salva também no arquivo local
+        fs.appendFile(logFilePath, startupLog, (err) => {
+            if (err) {
+                console.error('Erro ao escrever log de inicialização no arquivo local:', err);
+            }
+        });
+        
         console.log('---------------------------------------');
         console.log('Páginas disponíveis:');
         console.log(`- Envio de Mensagens: ${baseUrl}`);
