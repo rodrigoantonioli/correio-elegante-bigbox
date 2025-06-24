@@ -495,86 +495,29 @@ body.display-page {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    padding: 0 2rem;
 }
+.display-page .message-card .message-text::before,
+.display-page .message-card .message-text::after {
+    font-family: 'Lilita One', cursive;
+    font-size: 5rem;
+    color: var(--primary-color);
+    position: absolute;
+    top: -20px;
+}
+.display-page .message-card .message-text::before { content: '“'; left: 0; }
+.display-page .message-card .message-text::after { content: '”'; right: 0; }
 
 .display-page .message-card .timestamp {
     font-family: 'Poppins', sans-serif;
     font-size: 1.2rem;
-    color: #999;
+    color: #555;
     text-align: right;
-    margin-top: 15px;
+    margin-top: 10px;
     font-weight: 400;
 }
 
-.display-page #carousel-mode-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-}
-.display-page #carousel-slide {
-    flex-grow: 1;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.display-page .carousel-nav {
-    background: none;
-    border: none;
-    color: var(--primary-color);
-    font-size: 4rem;
-    cursor: pointer;
-    transition: transform 0.2s, color 0.2s;
-    padding: 20px;
-    width: auto;
-}
-.display-page .carousel-nav:hover {
-    color: #8e44ad;
-    transform: scale(1.1);
-}
-.display-page .carousel-speak-btn {
-    background: var(--accent-color);
-    color: var(--primary-color);
-    border: none;
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    font-size: 1.5rem;
-    cursor: pointer;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    transition: all 0.2s ease;
-    padding: 0;
-    margin-top: 15px;
-}
-.display-page .carousel-speak-btn:hover { transform: scale(1.1); }
-.display-page .carousel-speak-btn.speaking { animation: pulse 1s; }
-
-.display-page #ticker-mode-container {
-    overflow: hidden;
-    width: 100%;
-}
-.display-page .ticker-wrap {
-    width: 100%;
-    display: flex;
-    align-items: center;
-}
-.display-page #ticker-content {
-    font-family: 'Lilita One', cursive;
-    font-size: 5rem;
-    color: #fff;
-    white-space: nowrap;
-    display: inline-block;
-    padding-left: 100%;
-    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.8);
-}
-.display-page #ticker-content.animate {
-    animation: ticker-animation 60s linear infinite;
-}
-@keyframes ticker-animation {
-    from { transform: translateX(100%); }
-    to { transform: translateX(-100%); }
-}
 
 #queue-counter {
     position: fixed;
@@ -675,15 +618,6 @@ body.display-page {
     }
     .display-page .message-card .message-text {
         font-size: clamp(1.2rem, 8vw, 2.2rem);
-    }
-    .display-page .carousel-nav {
-        font-size: 2.5rem;
-        padding: 10px;
-    }
-    .display-page .carousel-speak-btn {
-        width: 45px;
-        height: 45px;
-        font-size: 1.2rem;
     }
 }
 
