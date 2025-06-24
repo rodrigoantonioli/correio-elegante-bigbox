@@ -70,28 +70,22 @@
             const refreshBtn = document.getElementById('refresh-btn');
 
             const fetchHistory = async () => {
-                console.log('Iniciando fetchHistory...');
+                
                 try {
                     const response = await fetch('/api/history');
-                    console.log('Resposta recebida:', response);
-                    console.log('Status:', response.status);
-                    console.log('Status Text:', response.statusText);
                     
                     if (!response.ok) {
                         throw new Error(`Falha ao carregar o histórico. Status: ${response.status}`);
                     }
                     
                     const contentType = response.headers.get("content-type");
-                    console.log('Content-Type:', contentType);
                     
                     if (!contentType || !contentType.includes("application/json")) {
                         const text = await response.text();
-                        console.log('Resposta não é JSON:', text);
                         throw new Error("Resposta não é JSON. Você pode ter sido redirecionado para o login.");
                     }
                     
                     const data = await response.json();
-                    console.log('Dados recebidos:', data);
                     
                     historyLogContainer.innerHTML = ''; // Limpa o container
                     if (data.log && data.log.length > 0) {
