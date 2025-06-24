@@ -47,14 +47,18 @@ async function flushBuffer(additionalContent = '') {
     flushTimeout = null;
   }
   
+  // Prepara conteúdo do buffer fora do try para ficar acessível no catch
+  let bufferContent = '';
+  if (messageBuffer.length > 0) {
+    bufferContent = messageBuffer.join('\n') + '\n';
+  }
+  
   try {
     const existing = await fetchGist();
     const file = existing.files && existing.files[GIST_FILENAME];
     
-    // Prepara conteúdo do buffer
-    let bufferContent = '';
-    if (messageBuffer.length > 0) {
-      bufferContent = messageBuffer.join('\n') + '\n';
+    // Limpa o buffer apenas se vamos tentar enviar
+    if (bufferContent) {
       messageBuffer = []; // Limpa o buffer
     }
     
@@ -73,8 +77,8 @@ async function flushBuffer(additionalContent = '') {
 process.on('SIGTERM', async () => {
   console.log('Enviando buffer antes de encerrar...');
   await flushBuffer('\n=== SERVIDOR ENCERRADO ===\n' + 
-    `Data/Hora: ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}\n` +
-    `========================\n\n');
+    'Data/Hora: ' + new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) + '\n' +
+    '========================\n\n');
 });
 
 function fetchGist() {
@@ -139,4 +143,4 @@ function updateGist(content) {
   });
 }
 
-module.exports = { appendToGist };
+module.exports = { appendToGist }; 
