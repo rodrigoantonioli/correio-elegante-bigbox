@@ -63,11 +63,6 @@ body {
     min-width: 0;
 }
 
-.admin-page .container {
-    max-width: none;
-    width: 100%;
-}
-
 header {
     margin-bottom: 20px;
     display: flex;
@@ -220,38 +215,16 @@ button:hover {
 }
 .message-item-admin {
     display: flex;
-    flex-direction: column;
+    align-items: center;
     gap: 10px;
-    margin-bottom: 15px;
-    background: #f9f9f9;
-    padding: 10px;
-    border-radius: var(--border-radius);
+    margin-bottom: 10px;
 }
 .message-item-admin textarea {
     flex-grow: 1;
-    min-height: 60px;
+    min-height: 40px;
     height: auto;
     resize: vertical;
 }
-.message-item-admin .controls {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-.message-item-admin .controls select {
-    flex-grow: 1;
-}
-.btn-move {
-    background: #6c757d;
-    color: white;
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    cursor: pointer;
-    flex-shrink: 0;
-}
-.btn-move:hover { background: #495057; }
 .btn-delete {
     background: #e74c3c;
     color: white;
@@ -284,10 +257,6 @@ button:hover {
 }
 .category-item input {
     flex-grow: 1;
-}
-.category-item .controls {
-    display: flex;
-    gap: 8px;
 }
 
 /* ==========================================================================
