@@ -60,7 +60,6 @@ const MAX_LOG_SIZE = parseInt(process.env.MAX_LOG_SIZE, 10) || 100;
 let connectedClients = {}; // Para rastrear clientes
 let blockedIps = new Set(); // Para armazenar IPs bloqueados
 let displayedMessagesLog = []; // Histórico para o carrossel
-let currentDisplayMode = 'default'; // Modos: 'default', 'carousel', 'ticker'
 let currentMessage = null; // Rastreia a mensagem atualmente em exibição
 let idleLoopTimeout = null; // Novo: controla o ciclo de ociosidade
 
@@ -531,8 +530,7 @@ io.on('connection', (socket) => {
 
     // Envia o modo de exibição atual para o cliente que acabou de se conectar
     // Útil principalmente para admin e display
-    socket.emit('initialState', { 
-        displayMode: currentDisplayMode,
+    socket.emit('initialState', {
         displayedHistory: displayedMessagesLog,
         totalMessages: messageLog ? messageLog.length : 0,
         isBusy: isDisplayBusy,
@@ -590,8 +588,7 @@ io.on('connection', (socket) => {
             log('Cliente de telão se conectou e foi adicionado à sala.');
             
             // Envia o estado atual completo para o novo cliente de telão
-            socket.emit('initialState', { 
-                displayMode: currentDisplayMode,
+            socket.emit('initialState', {
                 displayedHistory: displayedMessagesLog,
                 totalMessages: messageLog ? messageLog.length : 0, // Garante que seja um número
                 isBusy: isDisplayBusy,
@@ -675,15 +672,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Novo evento para definir o modo de exibição
-    socket.on('setDisplayMode', (mode) => {
-        if (['default', 'carousel', 'ticker'].includes(mode)) {
-            currentDisplayMode = mode;
-            console.log(`Modo de exibição alterado para: ${mode}`);
-            // Envia a atualização para todos, incluindo os painéis de admin
-            io.emit('modeUpdate', currentDisplayMode);
-        }
-    });
 
     // Novo evento para bloquear um IP
     socket.on('blockIp', (ipToBlock) => {
