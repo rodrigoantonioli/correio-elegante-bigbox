@@ -29,9 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
         textarea.placeholder = "Digite a nova mensagem aqui...";
         textarea.addEventListener('input', () => autoGrow(textarea));
 
-        const controls = document.createElement('div');
-        controls.className = 'message-controls';
-
         const select = document.createElement('select');
         categories.forEach(cat => {
             const opt = document.createElement('option');
@@ -41,28 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         select.value = msg.category || categories[0] || '';
 
-        const upBtn = document.createElement('button');
-        upBtn.className = 'btn-move';
-        upBtn.innerHTML = '⬆️';
-        upBtn.type = 'button';
-        upBtn.addEventListener('click', () => {
-            const prev = messageItem.previousElementSibling;
-            if (prev) {
-                messageItem.parentNode.insertBefore(messageItem, prev);
-            }
-        });
-
-        const downBtn = document.createElement('button');
-        downBtn.className = 'btn-move';
-        downBtn.innerHTML = '⬇️';
-        downBtn.type = 'button';
-        downBtn.addEventListener('click', () => {
-            const next = messageItem.nextElementSibling;
-            if (next) {
-                messageItem.parentNode.insertBefore(next, messageItem);
-            }
-        });
-
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'btn-delete';
         deleteBtn.innerHTML = '🗑️';
@@ -71,16 +46,12 @@ document.addEventListener('DOMContentLoaded', () => {
             messageItem.remove();
         });
 
-        controls.appendChild(select);
-        controls.appendChild(upBtn);
-        controls.appendChild(downBtn);
-        controls.appendChild(deleteBtn);
-
         messageItem.appendChild(textarea);
-        messageItem.appendChild(controls);
-
+        messageItem.appendChild(select);
+        messageItem.appendChild(deleteBtn);
+        
         setTimeout(() => autoGrow(textarea), 0);
-
+        
         return messageItem;
     };
 
@@ -94,58 +65,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     
-    const createCategoryItem = (cat = '') => {
-        const div = document.createElement('div');
-        div.className = 'category-item';
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = cat;
-
-        const controls = document.createElement('div');
-        controls.className = 'category-controls';
-
-        const upBtn = document.createElement('button');
-        upBtn.className = 'btn-move';
-        upBtn.innerHTML = '⬆️';
-        upBtn.type = 'button';
-        upBtn.addEventListener('click', () => {
-            const prev = div.previousElementSibling;
-            if (prev) {
-                div.parentNode.insertBefore(div, prev);
-            }
-        });
-
-        const downBtn = document.createElement('button');
-        downBtn.className = 'btn-move';
-        downBtn.innerHTML = '⬇️';
-        downBtn.type = 'button';
-        downBtn.addEventListener('click', () => {
-            const next = div.nextElementSibling;
-            if (next) {
-                div.parentNode.insertBefore(next, div);
-            }
-        });
-
-        const del = document.createElement('button');
-        del.className = 'btn-delete';
-        del.innerHTML = '🗑️';
-        del.type = 'button';
-        del.addEventListener('click', () => div.remove());
-
-        controls.appendChild(upBtn);
-        controls.appendChild(downBtn);
-        controls.appendChild(del);
-
-        div.appendChild(input);
-        div.appendChild(controls);
-        return div;
-    };
-
     const renderCategories = () => {
         categoriesListContainer.innerHTML = '';
         categories.forEach(cat => {
-            const item = createCategoryItem(cat);
-            categoriesListContainer.appendChild(item);
+            const div = document.createElement('div');
+            div.className = 'category-item';
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = cat;
+            const del = document.createElement('button');
+            del.className = 'btn-delete';
+            del.innerHTML = '🗑️';
+            del.type = 'button';
+            del.addEventListener('click', () => div.remove());
+            div.appendChild(input);
+            div.appendChild(del);
+            categoriesListContainer.appendChild(div);
         });
     };
 
@@ -167,10 +102,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     addCategoryBtn.addEventListener('click', () => {
-        const div = createCategoryItem('');
-        div.querySelector('input').placeholder = 'Nova categoria';
+        const div = document.createElement('div');
+        div.className = 'category-item';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Nova categoria';
+        const del = document.createElement('button');
+        del.className = 'btn-delete';
+        del.innerHTML = '🗑️';
+        del.type = 'button';
+        del.addEventListener('click', () => div.remove());
+        div.appendChild(input);
+        div.appendChild(del);
         categoriesListContainer.appendChild(div);
-        div.querySelector('input').focus();
+        input.focus();
     });
 
     // Salva as alterações
