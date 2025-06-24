@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveChangesBtn = document.getElementById('btn-save-messages');
     const categoriesListContainer = document.getElementById('categories-list');
     const addCategoryBtn = document.getElementById('btn-add-category');
-    const displayModeRadios = document.querySelectorAll('input[name="displayMode"]');
 
     let categories = [];
     let messages = [];
@@ -95,26 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.emit('getConfig');
 
     // --- Lógica do Modo de Exibição ---
-    socket.on('initialState', (state) => {
-        const currentMode = state.displayMode;
-        const radioToCheck = document.querySelector(`input[name="displayMode"][value="${currentMode}"]`);
-        if (radioToCheck) {
-            radioToCheck.checked = true;
-        }
-    });
-
-    socket.on('modeUpdate', (newMode) => {
-        const radioToCheck = document.querySelector(`input[name="displayMode"][value="${newMode}"]`);
-        if (radioToCheck) {
-            radioToCheck.checked = true;
-        }
-    });
-
-    displayModeRadios.forEach(radio => {
-        radio.addEventListener('change', (event) => {
-            socket.emit('setDisplayMode', event.target.value);
-        });
-    });
+    // Modos alternativos removidos - apenas o padrão permanece
     // --- Fim da Lógica ---
 
     // Adiciona um novo campo de mensagem
