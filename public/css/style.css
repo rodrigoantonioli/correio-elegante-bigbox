@@ -520,27 +520,27 @@ body.display-page {
 #message-display .message-text::after {
     font-family: 'Georgia', serif;
     color: var(--primary-color);
-    opacity: 0.3;
-    font-size: 8rem;
+    opacity: 0.25;
+    font-size: 10rem;
     font-weight: 900;
     position: absolute;
     line-height: 0.8;
-    z-index: -1; /* Coloca as aspas atrás do texto */
+    z-index: -1;
     transition: all 0.3s ease;
 }
 
 #message-display .message-text::before {
-    content: '"'; /* Aspa de abertura " */
-    top: -0.2em;
-    left: -0.4em;
-    animation: quoteFloat 3s ease-in-out infinite;
+    content: '“';
+    top: -0.4em;
+    left: -0.6em;
+    animation: quoteFloat 4s ease-in-out infinite;
 }
 
 #message-display .message-text::after {
-    content: '"'; /* Aspa de fechamento " */
-    bottom: -0.3em;
-    right: -0.4em;
-    animation: quoteFloatAfter 3s ease-in-out infinite;
+    content: '”';
+    bottom: -0.5em;
+    right: -0.6em;
+    animation: quoteFloat 4s ease-in-out infinite;
 }
 
 /* Hover effect nas aspas */
@@ -551,15 +551,10 @@ body.display-page {
     text-shadow: 0 0 20px rgba(242, 183, 5, 0.5);
 }
 
-/* Animação suave para as aspas */
+/* Animação suave para as aspas (SEM ROTAÇÃO) */
 @keyframes quoteFloat {
-    0%, 100% { transform: translateY(0) rotate(-15deg); }
-    50% { transform: translateY(-5px) rotate(-15deg); }
-}
-
-@keyframes quoteFloatAfter {
-    0%, 100% { transform: translateY(0) rotate(15deg); }
-    50% { transform: translateY(5px) rotate(15deg); }
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
 }
 
 #message-display .sender {
@@ -719,6 +714,10 @@ body.display-page {
         font-size: 0.9rem;
         bottom: 1em;
         right: 1.5em;
+    }
+    #message-display .message-text::before,
+    #message-display .message-text::after {
+        font-size: 6rem;
     }
 }
 
