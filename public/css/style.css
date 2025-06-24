@@ -249,6 +249,16 @@ button:hover {
 .admin-actions .btn-refresh { background-color: #17a2b8; }
 .admin-actions .btn-refresh:hover { background-color: #138496; }
 
+.category-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.category-item input {
+    flex-grow: 1;
+}
+
 /* ==========================================================================
    Estilos Específicos do Telão (.display-page)
    ========================================================================== */
