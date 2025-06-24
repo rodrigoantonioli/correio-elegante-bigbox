@@ -530,18 +530,16 @@ body.display-page {
 }
 
 #message-display .message-text::before {
-    content: '\\201C'; /* Aspa de abertura " */
+    content: '"'; /* Aspa de abertura " */
     top: -0.2em;
     left: -0.4em;
-    transform: rotate(-15deg);
     animation: quoteFloat 3s ease-in-out infinite;
 }
 
 #message-display .message-text::after {
-    content: '\\201D'; /* Aspa de fechamento " */
+    content: '"'; /* Aspa de fechamento " */
     bottom: -0.3em;
     right: -0.4em;
-    transform: rotate(15deg);
     animation: quoteFloatAfter 3s ease-in-out infinite;
 }
 
