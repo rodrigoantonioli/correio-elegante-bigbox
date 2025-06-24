@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         notificationSound.play().then(() => {
             notificationSound.pause();
             notificationSound.currentTime = 0;
-        }).catch(e => console.log("Áudio bloqueado."));
+        }).catch(() => {});
         
         // Atualiza o display de mensagens inicialmente
         updateTotalMessagesDisplay();
@@ -209,14 +209,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Listeners de Socket ---
     socket.on('initialState', state => {
-        console.log("Estado inicial recebido:", state);
         displayedHistory = state.displayedHistory || [];
         totalMessages = state.totalMessages || 0; // Garante que seja um número
         updateTotalMessagesDisplay();
 
         // Se o telão estava ocupado quando reconectamos, retoma a exibição
         if (state.isBusy && state.currentMessage) {
-            console.log("Retomando exibição da mensagem atual...");
+            
             const elapsedTime = Date.now() - new Date(state.currentMessage.timestamp).getTime();
             const remainingTime = MAX_DISPLAY_TIME - elapsedTime;
             
@@ -297,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.location.hostname.includes('onrender.com')) {
             url = 'https://correio-elegante-bigbox.onrender.com';
         }
-        console.log(`Gerando QR Code para URL: ${url}`);
+
         
         const qrCanvas = document.getElementById('qr-code');
         const qrCanvasSmall = document.getElementById('qr-code-small');
@@ -332,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, size, size);
-                console.log(`QR Code gerado via API para canvas ${size}x${size}.`);
+                
                 hideLoading();
             };
             img.onerror = () => {
@@ -355,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.error('Erro ao gerar QR Code grande com a biblioteca:', error);
                         createApiFallback(qrCanvas, 300);
                     } else {
-                        console.log('QR Code grande gerado com sucesso via biblioteca.');
+
                         hideLoading();
                     }
                 });
@@ -368,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.error('Erro ao gerar QR Code pequeno com a biblioteca:', error);
                         createApiFallback(qrCanvasSmall, 180);
                     } else {
-                        console.log('QR Code pequeno gerado com sucesso via biblioteca.');
+
                     }
                 });
             }

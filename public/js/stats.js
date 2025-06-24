@@ -11,13 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Conectar à sala de stats no servidor
     socket.on('connect', () => {
-        console.log('Conectado ao servidor de estatísticas');
         socket.emit('register', 'stats_admin');
         socket.emit('join_stats_admin');
     });
 
     socket.on('disconnect', () => {
-        console.log('Desconectado do servidor');
         totalMessagesEl.textContent = 'Desconectado';
         currentClientsEl.textContent = 'N/A';
         peakClientsEl.textContent = 'N/A';
