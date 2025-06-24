@@ -531,15 +531,15 @@ body.display-page {
 
 #message-display .message-text::before {
     content: '“';
-    top: -0.4em;
-    left: -0.6em;
+    top: -0.2em;
+    left: 0.1em;
     animation: quoteFloat 4s ease-in-out infinite;
 }
 
 #message-display .message-text::after {
     content: '”';
-    bottom: -0.5em;
-    right: -0.6em;
+    bottom: -0.2em;
+    right: 0.1em;
     animation: quoteFloat 4s ease-in-out infinite;
 }
 
