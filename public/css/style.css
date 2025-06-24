@@ -503,27 +503,21 @@ body.display-page {
     font-weight: 700;
 }
 
-#message-display .message-body {
+#message-display .message-text {
     margin: 1.5em 0 2em 0;
     padding: 0 2em;
     position: relative;
-}
-
-#message-display .message-text {
     color: var(--text-color);
     font-size: 2.8rem;
     font-weight: 500;
     line-height: 1.5;
-    margin: 0;
     font-style: italic;
-    display: block;
-    position: relative;
     z-index: 1;
 }
 
 /* Aspas decorativas */
-#message-display .message-body::before,
-#message-display .message-body::after {
+#message-display .message-text::before,
+#message-display .message-text::after {
     font-family: 'Georgia', serif;
     color: var(--primary-color);
     opacity: 0.3;
@@ -531,20 +525,20 @@ body.display-page {
     font-weight: 900;
     position: absolute;
     line-height: 0.8;
-    z-index: 0;
+    z-index: -1; /* Coloca as aspas atrás do texto */
     transition: all 0.3s ease;
 }
 
-#message-display .message-body::before {
-    content: '\201C';
+#message-display .message-text::before {
+    content: '\\201C'; /* Aspa de abertura " */
     top: -0.2em;
     left: -0.4em;
     transform: rotate(-15deg);
     animation: quoteFloat 3s ease-in-out infinite;
 }
 
-#message-display .message-body::after {
-    content: '\201D';
+#message-display .message-text::after {
+    content: '\\201D'; /* Aspa de fechamento " */
     bottom: -0.3em;
     right: -0.4em;
     transform: rotate(15deg);
@@ -552,8 +546,8 @@ body.display-page {
 }
 
 /* Hover effect nas aspas */
-.display-page .message-card:hover #message-display .message-body::before,
-.display-page .message-card:hover #message-display .message-body::after {
+.display-page .message-card:hover #message-display .message-text::before,
+.display-page .message-card:hover #message-display .message-text::after {
     opacity: 0.5;
     color: var(--accent-color);
     text-shadow: 0 0 20px rgba(242, 183, 5, 0.5);
