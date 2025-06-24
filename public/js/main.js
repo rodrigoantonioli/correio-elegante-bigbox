@@ -6,30 +6,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const form = document.getElementById('messageForm');
     const recipientInput = document.getElementById('recipient');
+    const categorySelect = document.getElementById('category');
     const messageSelect = document.getElementById('message');
     const senderInput = document.getElementById('sender');
     const confirmationDiv = document.getElementById('confirmation');
 
-    // Popula o select com as mensagens prontas
-    socket.on('updateMessages', (messages) => {
-        // Salva o valor selecionado
+    let allCategories = [];
+    let allMessages = [];
+
+    const populateCategories = () => {
+        if (!categorySelect) return;
+        categorySelect.innerHTML = '<option value="">Todas as Categorias</option>';
+        allCategories.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            categorySelect.appendChild(opt);
+        });
+    };
+
+    const populateMessages = () => {
+        const selected = categorySelect.value;
+        const filtered = selected ? allMessages.filter(m => m.category === selected) : allMessages;
         const selectedValue = messageSelect.value;
-        
         messageSelect.innerHTML = '<option value="" disabled>Escolha uma mensagem...</option>';
-        messages.forEach(msg => {
+        filtered.forEach(m => {
             const option = document.createElement('option');
-            option.value = msg;
-            option.textContent = msg;
+            option.value = m.text;
+            option.textContent = m.text;
             messageSelect.appendChild(option);
         });
-
-        // Restaura a seleção se a opção ainda existir
         if (Array.from(messageSelect.options).some(opt => opt.value === selectedValue)) {
             messageSelect.value = selectedValue;
         } else {
             messageSelect.value = "";
         }
+    };
+
+    socket.on('updateConfig', (config) => {
+        allCategories = config.categories || [];
+        allMessages = config.messages || [];
+        populateCategories();
+        populateMessages();
     });
+
+    if (categorySelect) {
+        categorySelect.addEventListener('change', populateMessages);
+    }
+
+    // Solicita as configurações iniciais
+    socket.emit('getConfig');
 
     form.addEventListener('submit', (e) => {
         e.preventDefault();
