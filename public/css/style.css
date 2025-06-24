@@ -532,14 +532,14 @@ body.display-page {
 #message-display .message-text::before {
     content: '“';
     top: -0.2em;
-    left: 0.1em;
+    left: 0em;
     animation: quoteFloat 4s ease-in-out infinite;
 }
 
 #message-display .message-text::after {
     content: '”';
     bottom: -0.2em;
-    right: 0.1em;
+    right: 0em;
     animation: quoteFloat 4s ease-in-out infinite;
 }
 
