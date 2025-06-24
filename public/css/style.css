@@ -465,83 +465,120 @@ body.display-page {
     align-items: center;
 }
 
-.display-page .message-card {
-    background-color: #fff;
-    border-radius: 25px;
-    padding: 3em;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
-    width: 90%;
-    max-width: 1200px;
-    text-align: left;
-    border-left: 15px solid var(--primary-color);
-    position: relative;
+/* ==========================================================================
+   Message Card - Layout Correio Elegante
+   ========================================================================== */
+#message-display {
+    width: 100%;
+    height: 100%;
     display: flex;
-    flex-direction: column;
     justify-content: center;
-    min-height: 60vh;
-    animation: slideUp 0.7s ease-out;
+    align-items: center;
 }
 
-#message-display .recipient,
-#message-display .sender {
+.display-page .message-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%);
+    border-radius: 30px;
+    padding: 3em 4em 4em 4em;
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.12),
+        0 10px 20px rgba(0, 0, 0, 0.08),
+        inset 0 1px 3px rgba(255, 255, 255, 0.9);
+    width: 85%;
+    max-width: 900px;
+    position: relative;
+    border-left: 18px solid var(--primary-color);
+    animation: slideUp 0.8s ease-out;
+}
+
+#message-display .recipient {
     color: var(--primary-color);
-    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-family: 'Lilita One', cursive;
+    font-size: 3.5rem;
+    margin: 0 0 0.8em 0;
+    font-weight: 400;
+}
+
+#message-display .recipient span {
     font-weight: 700;
-    margin: 0;
 }
 
 #message-display .message-body {
-    margin: 2em 0;
+    margin: 1.5em 0 2em 0;
+    padding: 0 2em;
     position: relative;
 }
 
 #message-display .message-text {
     color: var(--text-color);
-    font-size: clamp(2rem, 4vw, 3.8rem);
+    font-size: 2.8rem;
     font-weight: 500;
     line-height: 1.5;
     margin: 0;
-    padding: 0;
     font-style: italic;
-    z-index: 1;
+    display: block;
     position: relative;
+    z-index: 1;
 }
 
+/* Aspas decorativas */
 #message-display .message-body::before,
 #message-display .message-body::after {
-    content: "“";
     font-family: 'Georgia', serif;
-    color: var(--primary-color);
-    font-size: 10rem;
+    color: rgba(102, 51, 204, 0.15);
+    font-size: 6rem;
     font-weight: 900;
     position: absolute;
+    line-height: 0.8;
     z-index: 0;
-    line-height: 1;
 }
 
 #message-display .message-body::before {
-    top: -0.5em;
-    left: -0.15em;
+    content: """;
+    top: -0.15em;
+    left: -0.3em;
 }
 
 #message-display .message-body::after {
-    content: "”";
-    bottom: -0.5em;
-    right: -0.15em;
+    content: """;
+    bottom: -0.15em;
+    right: -0.3em;
 }
 
 #message-display .sender {
+    color: var(--primary-color);
+    font-family: 'Lilita One', cursive;
+    font-size: 3.5rem;
     text-align: right;
-    margin-top: auto; /* Empurra para o final */
+    margin: 0.8em 0 0 0;
+    font-weight: 400;
+}
+
+#message-display .sender span {
+    font-weight: 700;
 }
 
 #message-display .timestamp {
     position: absolute;
     bottom: 1.5em;
-    right: 2em;
-    font-size: clamp(1rem, 1.5vw, 1.2rem);
-    color: #aaa;
+    right: 2.5em;
+    font-size: 1rem;
+    color: #999;
     font-style: italic;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 300;
+}
+
+/* Animação de entrada */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 #queue-counter {
@@ -637,12 +674,34 @@ body.display-page {
         padding: 15px;
         flex-grow: 1;
     }
-    .display-page .message-card .recipient,
-    .display-page .message-card .sender {
-        font-size: clamp(1.5rem, 7vw, 2rem);
+    .display-page .message-card {
+        padding: 2em 1.5em 3em 1.5em;
+        width: 95%;
+        border-left-width: 12px;
     }
-    .display-page .message-card .message-text {
-        font-size: clamp(1.2rem, 8vw, 2.2rem);
+    
+    #message-display .recipient,
+    #message-display .sender {
+        font-size: 2rem;
+    }
+    
+    #message-display .message-text {
+        font-size: 1.6rem;
+    }
+    
+    #message-display .message-body {
+        padding: 0 1em;
+    }
+    
+    #message-display .message-body::before,
+    #message-display .message-body::after {
+        font-size: 4rem;
+    }
+    
+    #message-display .timestamp {
+        font-size: 0.9rem;
+        bottom: 1em;
+        right: 1.5em;
     }
 }
 
@@ -739,8 +798,8 @@ body.display-page {
     align-items: center;
     z-index: 10;
     background: rgba(0, 0, 0, 0.25);
-    backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     box-shadow: 0 5px 25px rgba(0,0,0,0.25);
     box-sizing: border-box;
     height: 240px; /* Aumentado */
@@ -887,117 +946,3 @@ body.display-page {
     filter: drop-shadow(0 2px 10px rgba(0,0,0,0.5));
 }
 
-/* ==========================================================================
-   Media Queries
-   ========================================================================== */
-
-/* ==========================================================================
-   Message Card - Layout Correio Elegante
-   ========================================================================== */
-.display-page #message-display {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.display-page #message-display .message-card {
-    background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
-    border-radius: 30px;
-    padding: 4em 5em;
-    box-shadow: 
-        0 20px 40px rgba(0, 0, 0, 0.1),
-        0 10px 20px rgba(0, 0, 0, 0.05),
-        inset 0 1px 3px rgba(255, 255, 255, 0.8);
-    width: 90%;
-    max-width: 1000px;
-    position: relative;
-    border-left: 20px solid var(--primary-color);
-    animation: slideUp 0.7s ease-out;
-}
-
-.display-page #message-display .recipient {
-    color: var(--primary-color);
-    font-family: 'Lilita One', cursive;
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    margin: 0 0 0.5em 0;
-}
-
-.display-page #message-display .recipient span {
-    font-weight: 700;
-}
-
-.display-page #message-display .message-body {
-    margin: 2.5em 0;
-    padding: 0 3em;
-    position: relative;
-}
-
-.display-page #message-display .message-text {
-    color: var(--text-color);
-    font-size: clamp(1.8rem, 3.5vw, 3.2rem);
-    font-weight: 500;
-    line-height: 1.6;
-    margin: 0;
-    font-style: italic;
-    display: block;
-    quotes: none;
-}
-
-/* Aspas decorativas */
-.display-page #message-display .message-body::before,
-.display-page #message-display .message-body::after {
-    font-family: 'Georgia', serif;
-    color: rgba(102, 51, 153, 0.2);
-    font-size: 8rem;
-    font-weight: 900;
-    position: absolute;
-    line-height: 1;
-}
-
-.display-page #message-display .message-body::before {
-    content: """;
-    top: -0.3em;
-    left: -0.1em;
-}
-
-.display-page #message-display .message-body::after {
-    content: """;
-    bottom: -0.3em;
-    right: -0.1em;
-}
-
-.display-page #message-display .sender {
-    color: var(--primary-color);
-    font-family: 'Lilita One', cursive;
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    text-align: right;
-    margin: 0.5em 0 0 0;
-}
-
-.display-page #message-display .sender span {
-    font-weight: 700;
-}
-
-.display-page #message-display .timestamp {
-    position: absolute;
-    bottom: 2em;
-    right: 3em;
-    font-size: 1.1rem;
-    color: #999;
-    font-style: italic;
-    font-family: 'Poppins', sans-serif;
-}
-
-/* Animação de entrada */
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
