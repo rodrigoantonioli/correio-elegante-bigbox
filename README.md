@@ -116,3 +116,7 @@ Para que todos na festa possam acessar, o ideal é publicar o projeto na interne
 
 O servidor guarda em memória apenas as últimas **100** mensagens (ou o valor definido na variável de ambiente `MAX_LOG_SIZE`).
 O histórico completo é salvo continuamente no arquivo `message_history.log` e pode ser acessado na página `/history`.
+
+### Log Persistente em Nuvem
+
+Para evitar a perda do histórico em provedores que não mantêm arquivos locais (como o Render), é possível configurar um Gist do GitHub para armazenar as mensagens. Basta definir as variáveis de ambiente `GITHUB_TOKEN`, `GIST_ID` e opcionalmente `GIST_FILENAME`. Quando configurado, cada nova mensagem é adicionada também ao Gist, mantendo um backup permanente.
