@@ -4,7 +4,8 @@
   "description": "App para envio de mensagens em tempo real para um telão em festas.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -15,5 +16,9 @@
     "express-useragent": "^1.0.15",
     "socket.io": "^4.7.5",
     "helmet": "^7.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.4"
   }
 }
