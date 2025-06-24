@@ -6,6 +6,7 @@ const path = require('path');
 const cookieSession = require('cookie-session');
 const useragent = require('express-useragent');
 const helmet = require('helmet');
+const AWS = require('aws-sdk');
 
 const app = express();
 app.set('trust proxy', 1); // Confia no proxy reverso (essencial para o Render)
@@ -74,10 +75,42 @@ const stats = {
 
 const logFilePath = path.join(__dirname, 'message_history.log');
 const messagesFilePath = path.join(__dirname, 'messages.json');
+const S3_BUCKET = process.env.S3_BUCKET;
+const s3 = new AWS.S3({ apiVersion: '2006-03-01', region: process.env.AWS_REGION });
 
 const log = (message) => {
     console.log(`[${new Date().toISOString()}] SERVIDOR: ${message}`);
 };
+
+const loadLogFromS3 = () => {
+    if (!S3_BUCKET) return Promise.resolve();
+    return s3.getObject({ Bucket: S3_BUCKET, Key: 'message_history.log' }).promise()
+        .then(data => {
+            fs.writeFileSync(logFilePath, data.Body.toString());
+            log('Log carregado do S3');
+        })
+        .catch(err => {
+            if (err.code !== 'NoSuchKey') {
+                console.error('Erro ao baixar log do S3:', err);
+            }
+        });
+};
+
+const uploadLogToS3 = () => {
+    if (!S3_BUCKET) return;
+    fs.readFile(logFilePath, (err, data) => {
+        if (err) {
+            return console.error('Erro ao ler log para upload S3:', err);
+        }
+        s3.putObject({ Bucket: S3_BUCKET, Key: 'message_history.log', Body: data }, (err2) => {
+            if (err2) {
+                console.error('Erro ao salvar log no S3:', err2);
+            }
+        });
+    });
+};
+
+loadLogFromS3();
 
 // Middleware de autenticação
 const checkAuth = (req, res, next) => {
@@ -268,6 +301,7 @@ const appendToLogFile = (message) => {
         if (err) {
             console.error('Erro ao escrever no arquivo de log:', err);
         }
+        uploadLogToS3();
     });
 };
 

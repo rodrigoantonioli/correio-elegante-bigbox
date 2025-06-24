@@ -64,6 +64,12 @@ O projeto foi desenhado para ser robusto, seguro e fácil de usar, tanto para os
 
    # Chave para a segurança da sessão de login
    SESSION_SECRET=uma_frase_bem_longa_e_aleatoria_para_seguranca
+
+   # (Opcional) Configurações para salvar o log no Amazon S3
+   S3_BUCKET=nome-do-seu-bucket
+   AWS_REGION=sua-regiao
+   AWS_ACCESS_KEY_ID=sua_chave
+   AWS_SECRET_ACCESS_KEY=sua_chave_secreta
    ```
    > **Atenção:** Em produção, use sempre senhas e chaves fortes.
 
@@ -116,3 +122,4 @@ Para que todos na festa possam acessar, o ideal é publicar o projeto na interne
 
 O servidor guarda em memória apenas as últimas **100** mensagens (ou o valor definido na variável de ambiente `MAX_LOG_SIZE`).
 O histórico completo é salvo continuamente no arquivo `message_history.log` e pode ser acessado na página `/history`.
+Se você definir `S3_BUCKET`, esse arquivo também será sincronizado com o Amazon S3, garantindo a persistência mesmo após reinícios do servidor.
