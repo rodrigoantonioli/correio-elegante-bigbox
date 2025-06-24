@@ -6,6 +6,7 @@ const path = require('path');
 const cookieSession = require('cookie-session');
 const useragent = require('express-useragent');
 const helmet = require('helmet');
+const { appendToGist } = require('./remoteLogger');
 
 const app = express();
 app.set('trust proxy', 1); // Confia no proxy reverso (essencial para o Render)
@@ -269,6 +270,13 @@ const appendToLogFile = (message) => {
             console.error('Erro ao escrever no arquivo de log:', err);
         }
     });
+    // Salva o log remotamente, se configurado
+    // Tenta salvar no Gist se as variáveis de ambiente estiverem definidas
+    if (appendToGist) {
+        appendToGist(logEntry).catch(err => {
+            console.error('Falha ao registrar log remoto:', err.message);
+        });
+    }
 };
 
 // Função para ler categorias e mensagens do arquivo
