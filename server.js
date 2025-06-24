@@ -747,26 +747,22 @@ app.get('/api/check-auth', (req, res) => {
     });
 });
 
-if (require.main === module) {
-    server.listen(PORT, '0.0.0.0', () => {
-        const baseUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
-        console.log(`Servidor rodando na porta ${PORT}`);
-        console.log("---------------------------------------");
-        console.log("Páginas disponíveis:");
-        console.log(`- Envio de Mensagens: ${baseUrl}`);
-        console.log(`- Telão: ${baseUrl}/display`);
-        console.log(`- Login Admin: ${baseUrl}/login`);
-        console.log("---------------------------------------");
-        console.log("Área de Administração (requer login):");
-        console.log(`- Painel Principal: ${baseUrl}/admin`);
-        console.log(`- Histórico: ${baseUrl}/history`);
-        console.log(`- Monitoramento: ${baseUrl}/clients`);
-        console.log(`- Estatísticas: ${baseUrl}/stats`);
-        console.log("---------------------------------------");
-        if (process.env.RENDER_EXTERNAL_URL) {
-            console.log(`URL Pública (se aplicável): ${process.env.RENDER_EXTERNAL_URL}`);
-        }
-    });
-}
-
-module.exports = { app, server };
+server.listen(PORT, '0.0.0.0', () => {
+    const baseUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+    console.log(`Servidor rodando na porta ${PORT}`);
+    console.log("---------------------------------------");
+    console.log("Páginas disponíveis:");
+    console.log(`- Envio de Mensagens: ${baseUrl}`);
+    console.log(`- Telão: ${baseUrl}/display`);
+    console.log(`- Login Admin: ${baseUrl}/login`);
+    console.log("---------------------------------------");
+    console.log("Área de Administração (requer login):");
+    console.log(`- Painel Principal: ${baseUrl}/admin`);
+    console.log(`- Histórico: ${baseUrl}/history`);
+    console.log(`- Monitoramento: ${baseUrl}/clients`);
+    console.log(`- Estatísticas: ${baseUrl}/stats`);
+    console.log("---------------------------------------");
+    if (process.env.RENDER_EXTERNAL_URL) {
+        console.log(`URL Pública (se aplicável): ${process.env.RENDER_EXTERNAL_URL}`);
+    }
+}); 
