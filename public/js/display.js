@@ -141,21 +141,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Funções de Renderização dos Modos ---
     const renderDefault = (msg) => {
-        defaultRecipientSpan.textContent = msg.recipient;
-        defaultMessageSpan.textContent = msg.message;
-        defaultSenderSpan.textContent = msg.sender;
+        // Seleciona o card da mensagem
+        const messageCard = document.querySelector('.message-card');
+        if (!messageCard) return;
 
-        // Adiciona a hora formatada
         const time = new Date(msg.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        const timeEl = document.createElement('p');
-        timeEl.className = 'timestamp';
-        timeEl.textContent = `Enviado às ${time}`;
-        // Limpa timestamp antigo e adiciona o novo
-        const oldTime = defaultMessageSpan.parentNode.querySelector('.timestamp');
-        if(oldTime) oldTime.remove();
-        defaultMessageSpan.parentNode.appendChild(timeEl);
 
-        adjustFontSize(defaultMessageSpan, msg.message);
+        // Constrói o HTML interno do cartão com uma estrutura mais limpa
+        messageCard.innerHTML = `
+            <p class="recipient">Para: <span>${msg.recipient}</span></p>
+            <div class="message-body">
+                <blockquote class="message-text">${msg.message}</blockquote>
+            </div>
+            <p class="sender">De: <span>${msg.sender}</span></p>
+            <p class="timestamp">${time}</p>
+        `;
+
+        // Ajusta o tamanho da fonte da mensagem dinamicamente
+        const messageElement = messageCard.querySelector('.message-text');
+        if(messageElement) {
+            adjustFontSize(messageElement, msg.message);
+        }
     };
 
     // --- Controle de Exibição ---
