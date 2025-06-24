@@ -38,29 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         select.value = msg.category || categories[0] || '';
 
-        const controls = document.createElement('div');
-        controls.className = 'controls';
-
-        const upBtn = document.createElement('button');
-        upBtn.className = 'btn-move';
-        upBtn.innerHTML = '⬆️';
-        upBtn.type = 'button';
-        upBtn.addEventListener('click', () => {
-            if (messageItem.previousElementSibling) {
-                messageItem.parentNode.insertBefore(messageItem, messageItem.previousElementSibling);
-            }
-        });
-
-        const downBtn = document.createElement('button');
-        downBtn.className = 'btn-move';
-        downBtn.innerHTML = '⬇️';
-        downBtn.type = 'button';
-        downBtn.addEventListener('click', () => {
-            if (messageItem.nextElementSibling) {
-                messageItem.parentNode.insertBefore(messageItem.nextElementSibling, messageItem);
-            }
-        });
-
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'btn-delete';
         deleteBtn.innerHTML = '🗑️';
@@ -69,16 +46,12 @@ document.addEventListener('DOMContentLoaded', () => {
             messageItem.remove();
         });
 
-        controls.appendChild(select);
-        controls.appendChild(upBtn);
-        controls.appendChild(downBtn);
-        controls.appendChild(deleteBtn);
-
         messageItem.appendChild(textarea);
-        messageItem.appendChild(controls);
-
+        messageItem.appendChild(select);
+        messageItem.appendChild(deleteBtn);
+        
         setTimeout(() => autoGrow(textarea), 0);
-
+        
         return messageItem;
     };
 
@@ -100,42 +73,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const input = document.createElement('input');
             input.type = 'text';
             input.value = cat;
-
-            const controls = document.createElement('div');
-            controls.className = 'controls';
-
-            const upBtn = document.createElement('button');
-            upBtn.className = 'btn-move';
-            upBtn.innerHTML = '⬆️';
-            upBtn.type = 'button';
-            upBtn.addEventListener('click', () => {
-                if (div.previousElementSibling) {
-                    div.parentNode.insertBefore(div, div.previousElementSibling);
-                }
-            });
-
-            const downBtn = document.createElement('button');
-            downBtn.className = 'btn-move';
-            downBtn.innerHTML = '⬇️';
-            downBtn.type = 'button';
-            downBtn.addEventListener('click', () => {
-                if (div.nextElementSibling) {
-                    div.parentNode.insertBefore(div.nextElementSibling, div);
-                }
-            });
-
             const del = document.createElement('button');
             del.className = 'btn-delete';
             del.innerHTML = '🗑️';
             del.type = 'button';
             del.addEventListener('click', () => div.remove());
-
-            controls.appendChild(upBtn);
-            controls.appendChild(downBtn);
-            controls.appendChild(del);
-
             div.appendChild(input);
-            div.appendChild(controls);
+            div.appendChild(del);
             categoriesListContainer.appendChild(div);
         });
     };
@@ -163,42 +107,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const input = document.createElement('input');
         input.type = 'text';
         input.placeholder = 'Nova categoria';
-
-        const controls = document.createElement('div');
-        controls.className = 'controls';
-
-        const upBtn = document.createElement('button');
-        upBtn.className = 'btn-move';
-        upBtn.innerHTML = '⬆️';
-        upBtn.type = 'button';
-        upBtn.addEventListener('click', () => {
-            if (div.previousElementSibling) {
-                div.parentNode.insertBefore(div, div.previousElementSibling);
-            }
-        });
-
-        const downBtn = document.createElement('button');
-        downBtn.className = 'btn-move';
-        downBtn.innerHTML = '⬇️';
-        downBtn.type = 'button';
-        downBtn.addEventListener('click', () => {
-            if (div.nextElementSibling) {
-                div.parentNode.insertBefore(div.nextElementSibling, div);
-            }
-        });
-
         const del = document.createElement('button');
         del.className = 'btn-delete';
         del.innerHTML = '🗑️';
         del.type = 'button';
         del.addEventListener('click', () => div.remove());
-
-        controls.appendChild(upBtn);
-        controls.appendChild(downBtn);
-        controls.appendChild(del);
-
         div.appendChild(input);
-        div.appendChild(controls);
+        div.appendChild(del);
         categoriesListContainer.appendChild(div);
         input.focus();
     });
