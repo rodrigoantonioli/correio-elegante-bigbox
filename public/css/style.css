@@ -525,24 +525,55 @@ body.display-page {
 #message-display .message-body::before,
 #message-display .message-body::after {
     font-family: 'Georgia', serif;
-    color: rgba(102, 51, 204, 0.15);
-    font-size: 6rem;
+    color: var(--primary-color);
+    opacity: 0.2;
+    font-size: 8rem;
     font-weight: 900;
     position: absolute;
     line-height: 0.8;
     z-index: 0;
+    transition: all 0.3s ease;
 }
 
 #message-display .message-body::before {
     content: """;
-    top: -0.15em;
-    left: -0.3em;
+    top: -0.2em;
+    left: -0.4em;
+    transform: rotate(-15deg);
 }
 
 #message-display .message-body::after {
     content: """;
-    bottom: -0.15em;
-    right: -0.3em;
+    bottom: -0.3em;
+    right: -0.4em;
+    transform: rotate(15deg);
+}
+
+/* Hover effect nas aspas */
+.display-page .message-card:hover #message-display .message-body::before,
+.display-page .message-card:hover #message-display .message-body::after {
+    opacity: 0.3;
+    color: var(--accent-color);
+    text-shadow: 0 0 20px rgba(242, 183, 5, 0.5);
+}
+
+/* Animação suave para as aspas */
+@keyframes quoteFloat {
+    0%, 100% { transform: translateY(0) rotate(-15deg); }
+    50% { transform: translateY(-5px) rotate(-15deg); }
+}
+
+@keyframes quoteFloatAfter {
+    0%, 100% { transform: translateY(0) rotate(15deg); }
+    50% { transform: translateY(5px) rotate(15deg); }
+}
+
+#message-display .message-body::before {
+    animation: quoteFloat 3s ease-in-out infinite;
+}
+
+#message-display .message-body::after {
+    animation: quoteFloatAfter 3s ease-in-out infinite;
 }
 
 #message-display .sender {
