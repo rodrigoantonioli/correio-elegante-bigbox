@@ -271,33 +271,47 @@ const appendToLogFile = (message) => {
     });
 };
 
-// Função para ler as mensagens prontas do arquivo
+// Função para ler categorias e mensagens do arquivo
 const readPredefinedMessages = () => {
     try {
         if (fs.existsSync(messagesFilePath)) {
             const data = fs.readFileSync(messagesFilePath, 'utf8');
-            // Adiciona um try-catch interno para o parse, caso o arquivo esteja corrompido
             try {
-                return JSON.parse(data);
+                const parsed = JSON.parse(data);
+                // Arquivo novo com categorias
+                if (parsed.categories && parsed.messages) {
+                    return parsed;
+                }
+                // Formato antigo: apenas array de strings
+                if (Array.isArray(parsed)) {
+                    return {
+                        categories: ['Geral'],
+                        messages: parsed.map(text => ({ text, category: 'Geral' }))
+                    };
+                }
             } catch (parseError) {
                 console.error('Erro ao fazer parse de messages.json:', parseError);
-                // Se o parse falhar, retorna as mensagens padrão para não quebrar o servidor
             }
         }
     } catch (readError) {
         console.error('Erro ao ler messages.json:', readError);
     }
-    // Retorna mensagens padrão se o arquivo não existir ou derro
-    return [
-        "Sua beleza é como um bug no meu coração, impossível de ignorar!",
-        "Se beleza desse cadeia, você pegaria prisão perpétua.",
-        "Você não é o Google, mas tem tudo que eu procuro.",
-        "Meu amor por você é como a inflação, só aumenta!",
-        "Se eu fosse um sistema operacional, seu sorriso seria minha tela de boot."
-    ];
+    // Valores padrão
+    return {
+        categories: ['Geral'],
+        messages: [
+            { text: "Sua beleza é como um bug no meu coração, impossível de ignorar!", category: 'Geral' },
+            { text: "Se beleza desse cadeia, você pegaria prisão perpétua.", category: 'Geral' },
+            { text: "Você não é o Google, mas tem tudo que eu procuro.", category: 'Geral' },
+            { text: "Meu amor por você é como a inflação, só aumenta!", category: 'Geral' },
+            { text: "Se eu fosse um sistema operacional, seu sorriso seria minha tela de boot.", category: 'Geral' }
+        ]
+    };
 };
 
-let predefinedMessages = readPredefinedMessages();
+const predefinedConfig = readPredefinedMessages();
+let messageCategories = predefinedConfig.categories;
+let predefinedMessages = predefinedConfig.messages;
 
 // Função para calcular o Top 5
 const calculateTopRecipients = () => {
@@ -526,8 +540,11 @@ io.on('connection', (socket) => {
         totalMessages: messageLog ? messageLog.length : 0
     });
 
-    // Envia as mensagens prontas para o cliente que acabou de conectar
-    socket.emit('updateMessages', predefinedMessages);
+    // Envia configurações iniciais (categorias e mensagens)
+    socket.emit('updateConfig', {
+        categories: messageCategories,
+        messages: predefinedMessages
+    });
 
     // O envio automático de log na conexão foi removido para maior segurança e eficiência.
     // O cliente de admin agora solicitará o log.
@@ -621,16 +638,30 @@ io.on('connection', (socket) => {
         processQueue(); // Isso vai iniciar o ciclo de ociosidade se a fila estiver vazia
     });
 
-    socket.on('getMessages', () => {
-        socket.emit('updateMessages', predefinedMessages);
+    socket.on('getConfig', () => {
+        socket.emit('updateConfig', {
+            categories: messageCategories,
+            messages: predefinedMessages
+        });
     });
 
-    socket.on('updateMessages', (newMessages) => {
-        predefinedMessages = newMessages;
+    socket.on('updateConfig', (config) => {
+        if (config.categories && Array.isArray(config.categories)) {
+            messageCategories = config.categories;
+        }
+        if (config.messages && Array.isArray(config.messages)) {
+            predefinedMessages = config.messages;
+        }
         try {
-            fs.writeFileSync(messagesFilePath, JSON.stringify(newMessages, null, 2));
-            console.log('Mensagens prontas atualizadas e salvas.');
-            io.emit('updateMessages', predefinedMessages); // Envia para todos os clientes
+            fs.writeFileSync(
+                messagesFilePath,
+                JSON.stringify({ categories: messageCategories, messages: predefinedMessages }, null, 2)
+            );
+            console.log('Configurações de mensagens atualizadas e salvas.');
+            io.emit('updateConfig', {
+                categories: messageCategories,
+                messages: predefinedMessages
+            });
         } catch (error) {
             console.error('Erro ao salvar messages.json:', error);
         }
