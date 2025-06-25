@@ -82,11 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
         messageScreen.classList.add('hidden');
         historyPlaybackScreen.classList.add('hidden');
 
-        // Para qualquer animação em andamento
-        if (historyAnimationInterval) {
-            clearInterval(historyAnimationInterval);
-            historyAnimationInterval = null;
-        }
 
         if (state === 'waiting') {
             waitingScreen.classList.remove('hidden');
@@ -399,7 +394,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const historyPlaybackScreen = document.getElementById('history-playback-screen');
     const historyContainer = document.getElementById('history-messages-container');
-    let historyAnimationInterval = null;
 
     const renderHistoryScreen = (history) => {
         setScreenState('history');
@@ -418,19 +412,28 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        const numColumns = Math.min(Math.floor(window.innerWidth / 500), 4);
-        const columns = [];
-        for (let i = 0; i < numColumns; i++) {
-            const colDiv = document.createElement('div');
-            colDiv.className = 'history-column';
-            columns.push(colDiv);
-            historyContainer.appendChild(colDiv);
-        }
+        const maxMessages = 40;
+        const messagesToShow = history.slice(-maxMessages);
 
-        // Distribui as mensagens nas colunas
-        history.forEach((msg, index) => {
-            const colIndex = index % numColumns;
-            columns[colIndex].appendChild(createHistoryCard(msg));
+        messagesToShow.forEach((msg, index) => {
+            const card = createHistoryCard(msg);
+            card.classList.add('floating-message');
+
+            const startX = Math.random() * 80;
+            const endX = startX + (Math.random() * 40 - 20);
+            const rotStart = -10 + Math.random() * 20;
+            const rotEnd = rotStart + (-5 + Math.random() * 10);
+            const duration = 25 + Math.random() * 15;
+            const delay = index * 2;
+
+            card.style.setProperty('--start-x', `${startX}%`);
+            card.style.setProperty('--end-x', `${endX}%`);
+            card.style.setProperty('--rot-start', `${rotStart}deg`);
+            card.style.setProperty('--rot-end', `${rotEnd}deg`);
+            card.style.animationDuration = `${duration}s`;
+            card.style.animationDelay = `${delay}s`;
+
+            historyContainer.appendChild(card);
         });
     };
 

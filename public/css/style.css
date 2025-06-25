@@ -862,30 +862,33 @@ body.display-page {
 
 
 #history-messages-container {
-    display: flex;
+    position: relative;
     width: 100%;
     height: 100%;
-    gap: 25px;
-    padding: 260px 25px 0 25px; /* Aumentado para não passar por baixo do banner */
+    overflow: hidden;
+    padding: 260px 25px 0 25px; /* Espaço para o banner superior */
     box-sizing: border-box;
 }
 
-.history-column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    animation: scroll-up 30s linear infinite;
-}
-.history-column:nth-child(even) {
-    animation-duration: 40s;
+.floating-message {
+    position: absolute;
+    animation-name: float-up;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+    will-change: transform, left, opacity;
 }
 
-@keyframes scroll-up {
+@keyframes float-up {
     from {
-        transform: translateY(100%);
+        left: var(--start-x, 50%);
+        transform: translateY(100vh) rotate(var(--rot-start, 0deg));
+        opacity: 0;
     }
+    10% { opacity: 1; }
     to {
-        transform: translateY(-100%);
+        left: var(--end-x, 50%);
+        transform: translateY(-150vh) rotate(var(--rot-end, 0deg));
+        opacity: 0;
     }
 }
 
