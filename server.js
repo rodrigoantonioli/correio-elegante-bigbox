@@ -495,7 +495,7 @@ io.on('connection', (socket) => {
     };
     
     // Timeout para detectar páginas que não se registram em 5 segundos
-    setTimeout(() => {
+    const detectTimeout = setTimeout(() => {
         if (connectedClients[socket.id] && connectedClients[socket.id].page === 'Conectando...') {
             // Tenta detectar a página pela URL do referer
             const referer = socket.handshake.headers.referer;
@@ -512,6 +512,7 @@ io.on('connection', (socket) => {
             updateClientsAdmin();
         }
     }, 5000);
+    detectTimeout.unref();
     
     // Atualiza o pico de clientes conectados
     const currentClientCount = Object.keys(connectedClients).length;
@@ -772,4 +773,9 @@ if (require.main === module) {
     });
 }
 
-module.exports = { app, server };
+const shutdown = () => {
+    clearTimeout(idleLoopTimeout);
+    io.close();
+};
+
+module.exports = { app, server, io, shutdown };
