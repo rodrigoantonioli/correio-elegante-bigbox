@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         waitingScreen.classList.add('hidden');
         messageScreen.classList.add('hidden');
         historyPlaybackScreen.classList.add('hidden');
+        if (messageBubblesContainer) messageBubblesContainer.classList.add('hidden');
 
         // Para qualquer animação em andamento
         if (historyAnimationInterval) {
@@ -97,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
             stopIncentiveCycle();
         } else if (state === 'history') {
             historyPlaybackScreen.classList.remove('hidden');
+            if (messageBubblesContainer) messageBubblesContainer.classList.remove('hidden');
             stopIncentiveCycle();
         }
     };
@@ -399,11 +401,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const historyPlaybackScreen = document.getElementById('history-playback-screen');
     const historyContainer = document.getElementById('history-messages-container');
+    const messageBubblesContainer = document.getElementById('message-bubbles-container');
     let historyAnimationInterval = null;
 
     const renderHistoryScreen = (history) => {
         setScreenState('history');
         historyContainer.innerHTML = '';
+        if (messageBubblesContainer) {
+            messageBubblesContainer.innerHTML = '';
+        }
         if (!history || history.length === 0) return;
 
         // Gera o QR Code para o painel superior
@@ -418,34 +424,33 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        const numColumns = Math.min(Math.floor(window.innerWidth / 500), 4);
-        const columns = [];
-        for (let i = 0; i < numColumns; i++) {
-            const colDiv = document.createElement('div');
-            colDiv.className = 'history-column';
-            columns.push(colDiv);
-            historyContainer.appendChild(colDiv);
-        }
-
-        // Distribui as mensagens nas colunas
+        // Cria bolhas flutuantes para cada mensagem
         history.forEach((msg, index) => {
-            const colIndex = index % numColumns;
-            columns[colIndex].appendChild(createHistoryCard(msg));
+            const bubble = createHistoryBubble(msg, index);
+            messageBubblesContainer.appendChild(bubble);
         });
     };
 
-    const createHistoryCard = (msg) => {
-        const card = document.createElement('div');
-        card.className = 'history-message-card';
-        
+    const createHistoryBubble = (msg, index) => {
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+
         const time = new Date(msg.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        
-        card.innerHTML = `
+
+        bubble.innerHTML = `
             <p class="recipient">Para: <strong>${msg.recipient}</strong></p>
             <p class="message">"${msg.message}"</p>
             <p class="sender">De: <strong>${msg.sender}</strong></p>
             <p class="timestamp">${time}</p>
         `;
-        return card;
+
+        const left = 10 + Math.random() * 80; // entre 10% e 90%
+        const delay = index * 2; // espaçamento
+        const duration = 20 + Math.random() * 10; // 20-30s
+        bubble.style.left = `${left}%`;
+        bubble.style.animationDuration = `${duration}s`;
+        bubble.style.animationDelay = `${delay}s`;
+
+        return bubble;
     };
 }); 
