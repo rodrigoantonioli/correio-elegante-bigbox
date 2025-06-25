@@ -801,15 +801,7 @@ body.display-page {
     color: white;
     overflow: hidden;
     position: relative;
-    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c);
-    background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite;
-}
-
-@keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    background: transparent;
 }
 
 #history-top-panel {
@@ -936,13 +928,13 @@ body.display-page {
 
 .history-message-card .recipient {
     font-family: 'Lilita One', cursive;
-    font-size: 1.9rem;
+    font-size: 2.1rem;
     color: var(--primary-color);
     margin: 0;
 }
 
 .history-message-card .message {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     margin: 12px 0;
     font-weight: 500;
     line-height: 1.4;
@@ -957,7 +949,7 @@ body.display-page {
 }
 
 .history-message-card .sender {
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     font-weight: 500;
     margin: 0;
 }
