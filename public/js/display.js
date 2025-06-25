@@ -70,6 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Gera o QR code com um pequeno delay para garantir que a UI esteja pronta
         setTimeout(generateQRCode, 100);
+
+        // NOVO: Atalho de desenvolvimento para modo memória
+        setupDevShortcuts();
     };
 
     startButton.addEventListener('click', initializeDisplay, { once: true });
@@ -432,6 +435,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const colIndex = index % numColumns;
             columns[colIndex].appendChild(createHistoryCard(msg));
         });
+
+        // Inicia animações após criar as colunas
+        startHistoryAnimations();
     };
 
     const createHistoryCard = (msg) => {
@@ -440,12 +446,107 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const time = new Date(msg.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         
+        // Cores de fundo aleatórias divertidas
+        const colors = [
+            'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+            'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+            'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+            'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+            'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+            'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
+        ];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        card.style.background = randomColor;
+        
+        // Adiciona borda colorida aleatória
+        const borderColors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f7dc6f', '#bb8fce', '#85c1e2', '#f8b500', '#ff6348'];
+        card.style.borderLeftColor = borderColors[Math.floor(Math.random() * borderColors.length)];
+        card.style.borderLeftWidth = '8px';
+        card.style.borderLeftStyle = 'solid';
+        
         card.innerHTML = `
-            <p class="recipient">Para: <strong>${msg.recipient}</strong></p>
+            <div class="message-header">
+                <span class="recipient-icon">💌</span>
+                <p class="recipient">Para: <strong>${msg.recipient}</strong></p>
+            </div>
             <p class="message">"${msg.message}"</p>
-            <p class="sender">De: <strong>${msg.sender}</strong></p>
-            <p class="timestamp">${time}</p>
+            <div class="message-footer">
+                <p class="sender">De: <strong>${msg.sender}</strong></p>
+                <p class="timestamp">${time}</p>
+            </div>
         `;
+        
+        // Adiciona rotação leve aleatória
+        const rotation = (Math.random() - 0.5) * 6; // -3 a +3 graus
+        card.style.transform = `rotate(${rotation}deg)`;
+        
         return card;
+    };
+
+    // --- Novo: Sistema de Atalho de Desenvolvimento ---
+    const setupDevShortcuts = () => {
+        document.addEventListener('keydown', (e) => {
+            // F9 para ativar o modo memória instantaneamente
+            if (e.key === 'F9') {
+                e.preventDefault();
+                log('🎮 Atalho F9 pressionado! Ativando modo memória...');
+                
+                // Só ativa se houver mensagens no histórico
+                if (displayedHistory.length > 0) {
+                    renderHistoryScreen(displayedHistory);
+                } else {
+                    log('❌ Nenhuma mensagem no histórico para exibir.');
+                }
+            }
+            
+            // F10 para voltar ao modo de espera
+            if (e.key === 'F10') {
+                e.preventDefault();
+                log('🎮 Atalho F10 pressionado! Voltando ao modo de espera...');
+                setScreenState('waiting');
+            }
+        });
+        
+        // Adiciona indicador visual sutil no canto
+        const devIndicator = document.createElement('div');
+        devIndicator.style.cssText = `
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8rem;
+            z-index: 9999;
+            pointer-events: none;
+        `;
+        devIndicator.textContent = 'F9: Modo Memória | F10: Modo Espera';
+        document.body.appendChild(devIndicator);
+    };
+
+    // Nova função para iniciar animações divertidas
+    const startHistoryAnimations = () => {
+        const cards = document.querySelectorAll('.history-message-card');
+        
+        cards.forEach((card, index) => {
+            // Adiciona delay aleatório para cada card
+            const delay = Math.random() * 2;
+            card.style.animationDelay = `${delay}s`;
+            
+            // Adiciona classe de animação aleatória
+            const animations = ['bounce-in', 'slide-in', 'fade-in', 'rotate-in', 'zoom-in'];
+            const randomAnimation = animations[Math.floor(Math.random() * animations.length)];
+            card.classList.add(randomAnimation);
+            
+            // Adiciona emojis decorativos aleatórios
+            if (Math.random() > 0.5) {
+                const emojis = ['💖', '✨', '🌟', '💫', '🎉', '🌈', '💝', '🎊', '🎈', '💕'];
+                const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+                const emojiSpan = document.createElement('span');
+                emojiSpan.className = 'floating-emoji';
+                emojiSpan.textContent = emoji;
+                card.appendChild(emojiSpan);
+            }
+        });
     };
 }); 
