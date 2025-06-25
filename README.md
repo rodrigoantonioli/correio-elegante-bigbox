@@ -1,6 +1,10 @@
 # 💌 Correio Elegante - Big Arraiá Ultra Bão
 
-Sistema de correio elegante para eventos, com telão interativo e modo memória animado.
+Sistema completo de correio elegante para eventos, com telão interativo e modo memória animado.
+
+![Status](https://img.shields.io/badge/status-pronto%20para%20produção-brightgreen)
+![Node.js](https://img.shields.io/badge/node.js-14%2B-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## 🚀 Status: Pronto para Produção
 
@@ -8,42 +12,40 @@ O sistema está completamente funcional e otimizado para uso em eventos reais.
 
 ## ✨ Funcionalidades Principais
 
-### 📱 Envio de Mensagens
-- Formulário simples e intuitivo
-- QR Code para acesso rápido via celular
-- Mensagens anônimas e personalizadas
-- Categorias de mensagens configuráveis
+### 📱 **Para Convidados**
+- **Envio Simples**: QR Code para acesso rápido via celular
+- **Mensagens Flexíveis**: Escolha entre categorias ou escreva a sua
+- **Anonimato**: Padrão "Admirador Secreto" ou identifique-se
+- **Interface Responsiva**: Funciona perfeitamente em qualquer dispositivo
 
-### 🖥️ Telão Interativo
-- Exibição automática de mensagens
-- Modo de espera com QR Code
-- Modo memória com animações divertidas
-- Controles manuais via atalhos de teclado
+### 🖥️ **Para o Telão**
+- **Exibição Elegante**: Layout de cartão com aspas decorativas animadas
+- **Fila Inteligente**: Tempo de exibição ajustado automaticamente
+- **Modo de Espera**: QR Code grande e contador de mensagens
+- **Modo Memória**: Animações coloridas e divertidas
+- **Controles Manuais**: Atalhos F9/F10 para controle durante eventos
 
-### 🎨 Modo Memória Melhorado
+### 🔧 **Para Administradores**
+- **Painel Seguro**: Acesso protegido por senha
+- **Monitoramento**: Clientes conectados em tempo real
+- **Estatísticas**: Dados completos do evento
+- **Gerenciamento**: Mensagens e categorias configuráveis
+- **Histórico**: Log completo de todas as mensagens
+
+## 🎨 Modo Memória Melhorado
+
+### ✨ **Melhorias Visuais**
 - **Fundo animado** com gradientes coloridos
 - **Cards coloridos** com gradientes aleatórios
-- **Animações de entrada** variadas
+- **Animações de entrada** variadas (bounce, slide, fade, rotate, zoom)
 - **Emojis flutuantes** decorativos
 - **Efeitos de hover** interativos
-- **Controle manual** via F9/F10
+- **Rotação sutil** nos cards
 
-### 🔧 Painel Administrativo
-- Monitoramento de clientes conectados
-- Estatísticas em tempo real
-- Histórico de mensagens
-- Configuração de categorias
-
-## 🎮 Controles do Telão
-
-### Atalhos de Teclado:
-- **F9**: Ativa o modo memória (se houver mensagens)
+### 🎮 **Controles Manuais**
+- **F9**: Ativa modo memória (se houver mensagens)
 - **F10**: Volta ao modo de espera
-
-### Modo Automático:
-- Ativa após 1 minuto sem mensagens
-- Dura 1 minuto no modo memória
-- Volta automaticamente ao modo de espera
+- **Indicador visual** sutil dos atalhos
 
 ## 🛠️ Instalação e Uso
 
@@ -51,26 +53,52 @@ O sistema está completamente funcional e otimizado para uso em eventos reais.
 - Node.js 14+
 - NPM ou Yarn
 
-### Instalação
+### Instalação Rápida
 ```bash
+# Clone o repositório
+git clone https://github.com/rodrigoantonioli/correio-elegante-bigbox.git
+cd correio-elegante-bigbox
+
+# Instale as dependências
 npm install
+
+# Configure as variáveis de ambiente
+cp .env.example .env
+# Edite o arquivo .env com suas configurações
+
+# Inicie o servidor
+npm start
 ```
 
-### Execução
+### Configuração
+Crie um arquivo `.env` na raiz:
+
 ```bash
-npm start
+# === OBRIGATÓRIAS ===
+ADMIN_PASSWORD=sua_senha_super_secreta
+SESSION_SECRET=uma_frase_bem_longa_e_aleatoria_para_seguranca
+
+# === OPCIONAIS ===
+PORT=3000
+NODE_ENV=production
+
+# === LOG EM NUVEM (OPCIONAL) ===
+GITHUB_TOKEN=seu_token_do_github
+GIST_ID=id_do_seu_gist
+GIST_FILENAME=log_evento.log
 ```
 
 ### Acesso
 - **Envio de Mensagens**: `http://localhost:3000`
 - **Telão**: `http://localhost:3000/display`
-- **Admin**: `http://localhost:3000/login`
+- **Login Admin**: `http://localhost:3000/login`
+- **Painel Admin**: `http://localhost:3000/admin` (após login)
 
 ## 📁 Estrutura do Projeto
 
 ```
 CorreioElegante/
-├── public/                 # Arquivos públicos
+├── public/                 # Frontend (HTML, CSS, JS)
 │   ├── css/               # Estilos
 │   ├── js/                # JavaScript do cliente
 │   ├── images/            # Imagens
@@ -79,6 +107,11 @@ CorreioElegante/
 │   ├── display.html       # Telão
 │   └── login.html         # Login admin
 ├── private/               # Páginas administrativas
+├── docs/                  # Documentação
+│   ├── API.md            # Documentação da API
+│   ├── DEPLOYMENT.md     # Guia de deploy
+│   └── CONTRIBUTING.md   # Guia de contribuição
+├── test/                  # Testes automatizados
 ├── server.js              # Servidor principal
 ├── messages.json          # Configuração de mensagens
 └── package.json           # Dependências
@@ -87,28 +120,59 @@ CorreioElegante/
 ## 🎯 Configuração
 
 ### Mensagens Pré-definidas
-Edite `messages.json` para configurar categorias e mensagens sugeridas:
+Edite `messages.json` para personalizar:
 
 ```json
 {
-  "categories": ["Geral", "Romântico", "Amizade"],
+  "categories": ["Geral", "Romântico", "Amizade", "Família"],
   "messages": [
-    {"text": "Sua beleza é como um bug no meu coração!", "category": "Romântico"},
-    {"text": "Você é incrível!", "category": "Amizade"}
+    {
+      "text": "Sua beleza é como um bug no meu coração!",
+      "category": "Romântico"
+    },
+    {
+      "text": "Você é incrível!",
+      "category": "Amizade"
+    }
   ]
 }
 ```
 
-### Variáveis de Ambiente
-- `PORT`: Porta do servidor (padrão: 3000)
-- `NODE_ENV`: Ambiente (development/production)
+### Personalização Visual
+- **Logo**: Substitua `public/images/logo.png`
+- **Cores**: Edite as variáveis CSS em `public/css/style.css`
+- **Sons**: Substitua `public/audio/notification.mp3`
+
+## 🚀 Deploy
+
+### Render.com (Recomendado)
+1. Conecte seu repositório GitHub
+2. Configure as variáveis de ambiente
+3. Deploy automático a cada push
+
+### Outras Plataformas
+- **Heroku**: Compatível
+- **Vercel**: Compatível
+- **DigitalOcean**: Compatível
+
+Veja o [Guia de Deploy](docs/DEPLOYMENT.md) para instruções detalhadas.
 
 ## 🔒 Segurança
 
-- **Autenticação** para área administrativa
-- **Bloqueio de IPs** maliciosos
-- **Validação** de entrada de dados
-- **Rate limiting** implícito
+### Autenticação
+- Sessões baseadas em cookies
+- Senha única para área administrativa
+- Bloqueio de IPs maliciosos
+
+### Validação
+- Sanitização de entrada de dados
+- Limitação de tamanho de mensagens
+- Rate limiting implícito
+
+### Logs
+- Logs detalhados de todas as operações
+- Histórico de mensagens persistente
+- Monitoramento de erros
 
 ## 📊 Monitoramento
 
@@ -120,44 +184,70 @@ Edite `messages.json` para configurar categorias e mensagens sugeridas:
 - Pico de conexões simultâneas
 
 ### Logs
-- Logs detalhados de todas as operações
-- Histórico de mensagens persistente
-- Monitoramento de erros
+- **Local**: `message_history.log`
+- **Remoto**: GitHub Gist (opcional)
+- **Console**: Logs em tempo real
 
-## 🎨 Personalização
+## 🧪 Testes
 
-### Cores e Temas
-As cores principais são definidas em `public/css/style.css`:
-- `--primary-color`: Cor principal
-- `--accent-color`: Cor de destaque
-- `--text-color`: Cor do texto
+### Execução
+```bash
+npm test
+```
 
-### Logo
-Substitua `public/images/logo.png` pelo logo do seu evento.
+### Cobertura
+- Testes de servidor (Jest + Supertest)
+- Testes de concorrência
+- Testes de integração
 
-## 🚀 Deploy
+## 📚 Documentação
 
-### Render.com (Recomendado)
-1. Conecte seu repositório
-2. Configure as variáveis de ambiente
-3. Deploy automático
+### Guias Disponíveis
+- **[API Documentation](docs/API.md)** - Documentação completa da API
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - Guia de deploy detalhado
+- **[Contributing Guide](docs/CONTRIBUTING.md)** - Como contribuir
+- **[AGENTS.md](AGENTS.md)** - Instruções para desenvolvedores
 
-### Outras Plataformas
-- **Heroku**: Compatível
-- **Vercel**: Compatível
-- **DigitalOcean**: Compatível
+### Recursos Externos
+- [Socket.IO Documentation](https://socket.io/docs/)
+- [Express.js Documentation](https://expressjs.com/)
+- [Node.js Documentation](https://nodejs.org/docs/)
 
-## 📞 Suporte
+## 🤝 Contribuindo
 
-Para dúvidas ou problemas:
-1. Verifique os logs do servidor
-2. Consulte a documentação em `TESTE_MODO_MEMORIA.md`
-3. Teste os atalhos F9/F10 no telão
+Contribuições são bem-vindas! Veja o [Guia de Contribuição](docs/CONTRIBUTING.md) para:
+
+- Como reportar bugs
+- Como sugerir features
+- Como contribuir com código
+- Padrões de desenvolvimento
+
+## 🆘 Suporte
+
+### Problemas Comuns
+1. **Verifique os logs** do servidor
+2. **Consulte a documentação** em `docs/`
+3. **Teste os atalhos** F9/F10 no telão
+4. **Verifique as variáveis** de ambiente
+
+### Recursos de Ajuda
+- [Issues do GitHub](https://github.com/rodrigoantonioli/correio-elegante-bigbox/issues)
+- [Documentação](docs/)
+- [AGENTS.md](AGENTS.md) para desenvolvedores
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## 🙏 Agradecimentos
+
+- **Socket.IO** pela comunicação em tempo real
+- **Express.js** pelo framework web
+- **Comunidade Node.js** pelo ecossistema
+- **Contribuidores** que ajudaram a melhorar o projeto
 
 ---
 
 **Desenvolvido com ❤️ para tornar eventos mais especiais!**
+
+![Correio Elegante](docs/images/tela-principal.png)
