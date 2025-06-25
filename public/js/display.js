@@ -540,7 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Adiciona emojis decorativos aleatórios
             if (Math.random() > 0.5) {
-                const emojis = ['💖', '✨', '🌟', '💫', '🎉', '🌈', '💝', '🎊', '🎈', '💕'];
+                const emojis = ['💖', '✨', '🌟', '💫', '🎉', '🎁', '💝', '🎊', '👍🏻', '💕', '🍀', '😊'];
                 const emoji = emojis[Math.floor(Math.random() * emojis.length)];
                 const emojiSpan = document.createElement('span');
                 emojiSpan.className = 'floating-emoji';
