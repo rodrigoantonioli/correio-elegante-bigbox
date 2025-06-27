@@ -35,6 +35,11 @@ http://localhost:3000/clients # Clientes conectados
 - **F10** - Volta ao modo espera (QR Code)
 - **Painel Admin** - Pode deletar mensagens inadequadas
 
+### 📱 Melhorias v1.3.0
+- **Timer Simplificado**: Cada mensagem fica 20s (fila grande) ou 40s (fila pequena)
+- **Múltiplos Telões**: Agora funcionam de forma independente e confiável
+- **Modo Memória Mobile**: Scroll vertical simples em celulares
+
 ### ⚡ Performance
 1. **Fila grande é normal** - O sistema gerencia automaticamente
 2. **20 segundos mínimo** - Cada mensagem fica esse tempo

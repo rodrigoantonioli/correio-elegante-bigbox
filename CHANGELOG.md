@@ -2,6 +2,25 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [1.3.0] - 2025-06-27 - Simplificação e Robustez
+
+### 🔧 Melhorias Importantes
+- **Sistema simplificado e mais robusto**: Removida lógica complexa de sincronização
+- **Timer centralizado no servidor**: Cada mensagem tem tempo fixo (20s ou 40s)
+- **Modo memória mobile otimizado**: Scroll vertical simples para celulares
+- **Processamento de fila mais confiável**: Sem condições de corrida
+
+### 🐛 Correções
+- **Múltiplos telões**: Corrigido problema de mensagens fora de ordem
+- **Narração sobreposta**: Resolvido com timer centralizado
+- **Modo memória mobile**: Agora funciona corretamente em celulares
+
+### 📱 Mobile
+- Detecta automaticamente dispositivos móveis (≤768px)
+- Modo memória com coluna única e scroll vertical
+- Sem animações complexas que travavam
+- Tamanhos de fonte otimizados
+
 ## [1.2.1] - 2025-06-27 - HOTFIX
 
 ### 🐛 Correção Crítica
