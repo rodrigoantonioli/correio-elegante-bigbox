@@ -2,6 +2,13 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [1.3.1] - 2025-06-27 - Correção de Transição
+
+### 🐛 Correção Crítica
+- **Modo espera não iniciava**: Corrigido problema onde após mensagem terminar, o display ia direto para modo memória
+- **Sincronia servidor-display**: Display agora respeita comandos de estado do servidor e limpa variáveis automaticamente
+- **Controle de voz**: Síntese de voz é cancelada corretamente quando servidor solicita mudança de estado
+
 ## [1.3.0] - 2025-06-27 - Simplificação e Robustez
 
 ### 🔧 Melhorias Importantes

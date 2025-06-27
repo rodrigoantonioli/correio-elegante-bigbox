@@ -273,12 +273,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     socket.on('enterWaitState', () => {
         log('Recebida instrução do servidor para entrar em modo de espera.');
-        // CORREÇÃO: Só entra em modo de espera se não houver mensagem sendo processada
-        if (!currentMessageId && !messageStartTime) {
-            setScreenState('waiting');
-        } else {
-            log('⚠️ Ignorando enterWaitState pois há uma mensagem em processamento.');
+        
+        // CORREÇÃO: Como o servidor controla o tempo centralmente, 
+        // limpamos as variáveis e entramos em modo de espera
+        if (currentMessageId || messageStartTime) {
+            log('Limpando variáveis de mensagem e entrando em modo de espera (controle do servidor).');
+            
+            // Para qualquer síntese de voz em andamento
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+            }
+            
+            // Limpa os temporizadores
+            clearTimeout(currentMessageTimeout);
+            clearTimeout(minDisplayTimeout);
+            currentMessageTimeout = null;
+            minDisplayTimeout = null;
+            messageStartTime = null;
+            currentMessageId = null;
         }
+        
+        setScreenState('waiting');
     });
     socket.on('queueUpdate', (data) => {
         totalMessages = data.totalMessages || 0;
