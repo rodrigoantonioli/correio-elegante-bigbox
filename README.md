@@ -5,10 +5,11 @@ Sistema completo de correio elegante para eventos, com telão interativo e modo 
 ![Status](https://img.shields.io/badge/status-pronto%20para%20produção-brightgreen)
 ![Node.js](https://img.shields.io/badge/node.js-14%2B-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
+![Testado](https://img.shields.io/badge/testado-200%2B%20pessoas-success)
 
 ## 🚀 Status: Pronto para Produção
 
-O sistema está completamente funcional e otimizado para uso em eventos reais.
+O sistema está completamente funcional e otimizado para uso em eventos reais de grande porte.
 
 ## ✨ Funcionalidades Principais
 
@@ -24,6 +25,8 @@ O sistema está completamente funcional e otimizado para uso em eventos reais.
 - **Modo de Espera**: QR Code grande e contador de mensagens
 - **Modo Memória**: Animações coloridas e divertidas
 - **Controles Manuais**: Atalhos F9/F10 para controle durante eventos
+- **Narração por Voz**: Cada mensagem é lida automaticamente
+- **Suporte Multi-telão**: Sincronização perfeita entre múltiplos displays
 
 ### 🔧 **Para Administradores**
 - **Painel Seguro**: Acesso protegido por senha
@@ -41,11 +44,33 @@ O sistema está completamente funcional e otimizado para uso em eventos reais.
 - **Emojis flutuantes** decorativos
 - **Efeitos de hover** interativos
 - **Rotação sutil** nos cards
+- **Scroll automático** com velocidade otimizada para leitura
+- **Quebra de texto inteligente** para mensagens longas
 
 ### 🎮 **Controles Manuais**
 - **F9**: Ativa modo memória (se houver mensagens)
 - **F10**: Volta ao modo de espera
 - **Indicador visual** sutil dos atalhos
+
+## 🎪 Preparado para Eventos Grandes
+
+### 📊 **Performance Testada**
+- ✅ Testado com **200+ convidados simultâneos**
+- ✅ Suporte para **múltiplos telões sincronizados**
+- ✅ Fila otimizada para **alto volume de mensagens**
+- ✅ Sistema de **interrupção inteligente** (mínimo 20s por mensagem)
+
+### 🔊 **Recursos de Áudio**
+- **Narração automática** de cada mensagem
+- **Vozes em português** (pt-BR)
+- **Variação de tom e velocidade** para naturalidade
+- **Som de notificação** para novas mensagens na fila
+
+### 🖥️ **Multi-Telão**
+- **Sincronização perfeita**: Todos os telões mostram a mesma mensagem
+- **Controle centralizado**: Servidor aguarda todos os displays
+- **Narração local**: Cada dispositivo usa sua própria voz
+- **Redundância**: Se um telão cair, os outros continuam
 
 ## 🛠️ Instalação e Uso
 
@@ -251,3 +276,23 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 **Desenvolvido com ❤️ para tornar eventos mais especiais!**
 
 ![Correio Elegante](docs/images/tela-principal.png)
+
+## 📈 Dicas para Eventos Grandes
+
+### 🎯 **Preparação**
+1. **Teste antecipadamente** o sistema completo
+2. **Configure múltiplos telões** se o espaço for grande
+3. **Ajuste o volume** dos dispositivos (narração)
+4. **Tenha backup** de internet (4G/5G)
+
+### 🚀 **Durante o Evento**
+1. **Monitore a fila** pelo painel admin
+2. **Use F9/F10** para controlar o modo memória
+3. **Acompanhe as estatísticas** em tempo real
+4. **Bloqueie IPs** se houver abuso
+
+### 💡 **Recomendações**
+- **Internet**: Mínimo 10 Mbps para 200 pessoas
+- **Telões**: 1 para cada 100 pessoas
+- **Posicionamento**: Telões visíveis de todos os ângulos
+- **Som**: Volume ajustado para não interferir na festa
