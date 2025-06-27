@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentMessageTimeout;
     let minDisplayTimeout; // Novo temporizador para o tempo mínimo
     let messageStartTime = null;
+    let currentMessageId = null; // Nova variável para rastrear ID da mensagem atual
     const MIN_DISPLAY_TIME = 20000; // 20 segundos
     const MAX_DISPLAY_TIME = 60000; // 1 minuto
     let ptBrVoices = [];
@@ -170,6 +171,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Controle de Exibição ---
 
     const startDisplay = (msg, duration) => {
+        // Verifica se já estamos exibindo esta mensagem
+        if (currentMessageId === msg.id) {
+            log(`Mensagem ID ${msg.id} já está sendo exibida. Ignorando duplicata.`);
+            return;
+        }
+        
+        currentMessageId = msg.id;
         setScreenState('message');
         renderDefault(msg);
         const fullText = `Correio Elegante para ${msg.recipient}. A mensagem é: ${msg.message}. Enviado por: ${msg.sender}.`;
@@ -199,6 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentMessageTimeout = null;
         minDisplayTimeout = null;
         messageStartTime = null;
+        currentMessageId = null; // Limpa o ID da mensagem atual
         
         socket.emit('messageDisplayed');
     };

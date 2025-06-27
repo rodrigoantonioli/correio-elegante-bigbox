@@ -62,6 +62,7 @@ let blockedIps = new Set(); // Para armazenar IPs bloqueados
 let displayedMessagesLog = []; // Histórico para o carrossel
 let currentMessage = null; // Rastreia a mensagem atualmente em exibição
 let idleLoopTimeout = null; // Novo: controla o ciclo de ociosidade
+let displayCompletionCount = 0; // Conta quantos displays completaram a mensagem atual
 
 // Estrutura para Estatísticas
 const stats = {
@@ -360,6 +361,7 @@ const processQueue = () => {
         clearTimeout(idleLoopTimeout); // Interrompe o ciclo de ociosidade
         idleLoopTimeout = null;
         isDisplayBusy = true;
+        displayCompletionCount = 0; // Reseta o contador ao iniciar nova mensagem
         const nextMessage = messageQueue.shift();
         currentMessage = nextMessage;
 
@@ -630,9 +632,22 @@ io.on('connection', (socket) => {
 
     socket.on('messageDisplayed', () => {
         log(`Telão (ID do Socket: ${socket.id}) informou que terminou de exibir a mensagem.`);
-        isDisplayBusy = false;
-        currentMessage = null;
-        processQueue(); // Isso vai iniciar o ciclo de ociosidade se a fila estiver vazia
+        
+        // Incrementa o contador de displays que completaram
+        displayCompletionCount++;
+        
+        // Conta quantos displays estão conectados
+        const displayRoomSize = io.sockets.adapter.rooms.get('display_room')?.size || 0;
+        
+        log(`${displayCompletionCount} de ${displayRoomSize} telões terminaram de exibir a mensagem.`);
+        
+        // Só processa a próxima mensagem quando TODOS os displays terminarem
+        if (displayCompletionCount >= displayRoomSize || displayRoomSize === 0) {
+            isDisplayBusy = false;
+            currentMessage = null;
+            displayCompletionCount = 0; // Reseta o contador
+            processQueue(); // Isso vai iniciar o ciclo de ociosidade se a fila estiver vazia
+        }
     });
 
     socket.on('getConfig', () => {

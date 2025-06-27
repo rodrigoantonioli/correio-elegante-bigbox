@@ -869,16 +869,17 @@ body.display-page {
     gap: 25px;
     padding: 260px 25px 0 25px; /* Aumentado para não passar por baixo do banner */
     box-sizing: border-box;
+    overflow: visible; /* Permite que o conteúdo seja visível ao invés de cortado */
 }
 
 .history-column {
     flex: 1;
     display: flex;
     flex-direction: column;
-    animation: scroll-up 30s linear infinite;
+    animation: scroll-up 60s linear infinite; /* Aumentado para 60s para leitura mais confortável */
 }
 .history-column:nth-child(even) {
-    animation-duration: 40s;
+    animation-duration: 75s; /* Aumentado proporcionalmente */
 }
 
 @keyframes scroll-up {
@@ -900,7 +901,8 @@ body.display-page {
     border-left: 6px solid var(--primary-color);
     max-width: 480px;
     position: relative;
-    overflow: hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
     transition: all 0.3s ease;
 }
 
@@ -928,17 +930,22 @@ body.display-page {
 
 .history-message-card .recipient {
     font-family: 'Lilita One', cursive;
-    font-size: 2.1rem;
+    font-size: 1.8rem; /* Reduzido proporcionalmente */
     color: var(--primary-color);
     margin: 0;
 }
 
 .history-message-card .message {
-    font-size: 1.8rem;
+    font-size: 1.4rem; /* Reduzido de 1.8rem para acomodar melhor mensagens longas */
     margin: 12px 0;
     font-weight: 500;
-    line-height: 1.4;
+    line-height: 1.5; /* Aumentado para melhor legibilidade */
     position: relative;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+    max-width: 100%; /* Garante que não ultrapasse o card */
 }
 
 .history-message-card .message-footer {
@@ -949,7 +956,7 @@ body.display-page {
 }
 
 .history-message-card .sender {
-    font-size: 1.6rem;
+    font-size: 1.3rem; /* Reduzido proporcionalmente */
     font-weight: 500;
     margin: 0;
 }
@@ -1067,21 +1074,7 @@ body.display-page {
 /* ==========================================================================
    Efeitos de Partículas (Opcional)
    ========================================================================== */
-.history-message-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
-    transform: translateX(-100%);
-    transition: transform 0.6s ease;
-}
-
-.history-message-card:hover::before {
-    transform: translateX(100%);
-}
+/* Removido efeito de partículas para evitar problemas de overflow */
 
 /* ==========================================================================
    Antigos Estilos de Memórias (Removidos/Adaptados)
