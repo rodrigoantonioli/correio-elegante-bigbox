@@ -384,9 +384,15 @@ const processQueue = () => {
             totalMessages: messageLog ? messageLog.length : 0
         });
     } else if (messageQueue.length === 0 && !isDisplayBusy) {
-        // Inicia o ciclo de ociosidade se não estiver rodando
+        // CORREÇÃO: Adiciona um pequeno delay antes de entrar em modo de espera
+        // para evitar condição de corrida com mensagens chegando
         if (!idleLoopTimeout) {
-            enterWaitState();
+            idleLoopTimeout = setTimeout(() => {
+                // Verifica novamente se a fila ainda está vazia antes de entrar em espera
+                if (messageQueue.length === 0 && !isDisplayBusy) {
+                    enterWaitState();
+                }
+            }, 500); // 500ms de delay
         }
     }
 };

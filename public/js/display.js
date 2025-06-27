@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const MAX_DISPLAY_TIME = 60000; // 1 minuto
     let ptBrVoices = [];
     let totalMessages = 0; // Inicializa com 0 explicitamente
+    let idleLoopTimeout = null; // Timeout para controlar o modo memória
 
     const incentivePhrases = [
         "Sua mensagem pode ser a próxima!",
@@ -177,8 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        currentMessageId = msg.id;
+        // CORREÇÃO: Sempre muda para tela de mensagem ANTES de processar
         setScreenState('message');
+        
+        currentMessageId = msg.id;
         renderDefault(msg);
         const fullText = `Correio Elegante para ${msg.recipient}. A mensagem é: ${msg.message}. Enviado por: ${msg.sender}.`;
         speakMessage(fullText);
@@ -256,11 +259,25 @@ document.addEventListener('DOMContentLoaded', () => {
         totalMessages = data.totalMessages || 0;
         updateTotalMessagesDisplay();
         displayedHistory = data.history;
+        
+        // CORREÇÃO: Cancela qualquer timeout de modo memória ao receber nova mensagem
+        clearTimeout(idleLoopTimeout);
+        
+        // CORREÇÃO: Para a síntese de voz anterior se ainda estiver falando
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+        }
+        
         startDisplay(data.message);
     });
     socket.on('enterWaitState', () => {
         log('Recebida instrução do servidor para entrar em modo de espera.');
-        setScreenState('waiting');
+        // CORREÇÃO: Só entra em modo de espera se não houver mensagem sendo processada
+        if (!currentMessageId && !messageStartTime) {
+            setScreenState('waiting');
+        } else {
+            log('⚠️ Ignorando enterWaitState pois há uma mensagem em processamento.');
+        }
     });
     socket.on('queueUpdate', (data) => {
         totalMessages = data.totalMessages || 0;
