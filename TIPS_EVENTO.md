@@ -59,6 +59,11 @@ http://localhost:3000/clients # Clientes conectados
 - **Solução**: Ative modo memória (F9) temporariamente
 - **Diversão**: Deixa rolar, faz parte da brincadeira!
 
+### Problema: Mensagem Narrada mas Não Aparece na Tela
+- **Status**: CORRIGIDO na versão 1.2.1
+- **Solução**: Recarregue a página (F5) se acontecer
+- **Causa**: Bug de sincronização já corrigido
+
 ## 💡 Dicas de Ouro
 
 ### 🎤 Animação

@@ -2,6 +2,15 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [1.2.1] - 2025-06-27 - HOTFIX
+
+### 🐛 Correção Crítica
+- **Bug de sincronização entre estados**: Corrigido problema onde mensagens eram narradas mas não exibidas
+  - Adiciona delay de 500ms antes de entrar em modo de espera
+  - Cancela síntese de voz anterior ao receber nova mensagem
+  - Impede entrada em modo de espera durante processamento
+  - Sempre muda para tela correta antes de processar
+
 ## [1.2.0] - 2025-06-27
 
 ### 🎉 Novo
