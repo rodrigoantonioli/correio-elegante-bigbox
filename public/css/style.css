@@ -719,6 +719,73 @@ body.display-page {
     #message-display .message-text::after {
         font-size: 6rem;
     }
+    
+    /* MODO MEMÓRIA MOBILE SIMPLIFICADO */
+    #history-playback-screen {
+        padding: 10px;
+    }
+    
+    #history-top-panel {
+        height: 120px; /* Menor no mobile */
+        padding: 10px 15px;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .history-logo {
+        height: 60px;
+        padding: 10px;
+    }
+    
+    #history-messages-container {
+        padding: 130px 10px 10px 10px;
+        flex-direction: column; /* Uma coluna só no mobile */
+        gap: 15px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: calc(100vh - 130px);
+    }
+    
+    .history-column {
+        animation: none; /* Remove animação no mobile */
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .history-column:nth-child(even) {
+        animation: none; /* Remove animação no mobile */
+    }
+    
+    .history-message-card {
+        max-width: 100%;
+        margin-bottom: 15px;
+        padding: 15px;
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    .history-message-card .recipient {
+        font-size: 1.2rem;
+    }
+    
+    .history-message-card .message {
+        font-size: 1rem;
+        line-height: 1.4;
+    }
+    
+    .history-message-card .sender {
+        font-size: 0.9rem;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 }
 
 /* Adicionando estilo para o texto do QR code */

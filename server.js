@@ -57,12 +57,13 @@ let messageLog = [];
 // Mantém apenas as últimas N mensagens em memória para enviar aos clientes.
 // O histórico completo continua salvo em "message_history.log".
 const MAX_LOG_SIZE = parseInt(process.env.MAX_LOG_SIZE, 10) || 100;
+const MIN_DISPLAY_TIME = 20000; // 20 segundos quando há muitas mensagens
+const MAX_DISPLAY_TIME = 40000; // 40 segundos quando há poucas mensagens
 let connectedClients = {}; // Para rastrear clientes
 let blockedIps = new Set(); // Para armazenar IPs bloqueados
 let displayedMessagesLog = []; // Histórico para o carrossel
 let currentMessage = null; // Rastreia a mensagem atualmente em exibição
 let idleLoopTimeout = null; // Novo: controla o ciclo de ociosidade
-let displayCompletionCount = 0; // Conta quantos displays completaram a mensagem atual
 
 // Estrutura para Estatísticas
 const stats = {
@@ -361,7 +362,7 @@ const processQueue = () => {
         clearTimeout(idleLoopTimeout); // Interrompe o ciclo de ociosidade
         idleLoopTimeout = null;
         isDisplayBusy = true;
-        displayCompletionCount = 0; // Reseta o contador ao iniciar nova mensagem
+        
         const nextMessage = messageQueue.shift();
         currentMessage = nextMessage;
 
@@ -372,7 +373,9 @@ const processQueue = () => {
         }
 
         log(`Enviando nova mensagem para o telão (ID: ${nextMessage.id}). Fila agora com: ${messageQueue.length}`);
-        io.emit('displayMessage', { 
+        
+        // SIMPLIFICADO: Envia para todos os telões sem se preocupar com sincronização complexa
+        io.to('display_room').emit('displayMessage', { 
             message: nextMessage, 
             history: displayedMessagesLog,
             totalMessages: messageLog ? messageLog.length : 0
@@ -383,16 +386,26 @@ const processQueue = () => {
             count: messageQueue.length, 
             totalMessages: messageLog ? messageLog.length : 0
         });
+        
+        // SIMPLIFICADO: Tempo fixo para cada mensagem, independente de quantos telões
+        const displayTime = messageQueue.length > 5 ? MIN_DISPLAY_TIME : MAX_DISPLAY_TIME;
+        
+        setTimeout(() => {
+            log("Tempo de exibição finalizado. Processando próxima mensagem.");
+            isDisplayBusy = false;
+            currentMessage = null;
+            processQueue();
+        }, displayTime);
+        
     } else if (messageQueue.length === 0 && !isDisplayBusy) {
-        // CORREÇÃO: Adiciona um pequeno delay antes de entrar em modo de espera
-        // para evitar condição de corrida com mensagens chegando
+        // Adiciona um pequeno delay antes de entrar em modo de espera
         if (!idleLoopTimeout) {
             idleLoopTimeout = setTimeout(() => {
                 // Verifica novamente se a fila ainda está vazia antes de entrar em espera
                 if (messageQueue.length === 0 && !isDisplayBusy) {
                     enterWaitState();
                 }
-            }, 500); // 500ms de delay
+            }, 1000); // 1 segundo de delay
         }
     }
 };
@@ -636,24 +649,10 @@ io.on('connection', (socket) => {
         processQueue();
     });
 
+    // SIMPLIFICADO: Removido o evento messageDisplayed
+    // O servidor agora controla o tempo de exibição de forma centralizada
     socket.on('messageDisplayed', () => {
-        log(`Telão (ID do Socket: ${socket.id}) informou que terminou de exibir a mensagem.`);
-        
-        // Incrementa o contador de displays que completaram
-        displayCompletionCount++;
-        
-        // Conta quantos displays estão conectados
-        const displayRoomSize = io.sockets.adapter.rooms.get('display_room')?.size || 0;
-        
-        log(`${displayCompletionCount} de ${displayRoomSize} telões terminaram de exibir a mensagem.`);
-        
-        // Só processa a próxima mensagem quando TODOS os displays terminarem
-        if (displayCompletionCount >= displayRoomSize || displayRoomSize === 0) {
-            isDisplayBusy = false;
-            currentMessage = null;
-            displayCompletionCount = 0; // Reseta o contador
-            processQueue(); // Isso vai iniciar o ciclo de ociosidade se a fila estiver vazia
-        }
+        log(`Telão (ID do Socket: ${socket.id}) sinalizou fim da exibição (ignorado - usando timer central).`);
     });
 
     socket.on('getConfig', () => {

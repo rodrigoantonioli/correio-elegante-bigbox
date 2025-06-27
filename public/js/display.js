@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const finishDisplay = () => {
-        log(`Finalizando exibição. Notificando o servidor.`);
+        log(`Finalizando exibição.`);
         
         // Limpa AMBOS os temporizadores
         clearTimeout(currentMessageTimeout);
@@ -212,7 +212,8 @@ document.addEventListener('DOMContentLoaded', () => {
         messageStartTime = null;
         currentMessageId = null; // Limpa o ID da mensagem atual
         
-        socket.emit('messageDisplayed');
+        // REMOVIDO: Não notifica mais o servidor
+        // O servidor agora controla o tempo centralmente
     };
 
     // Nova função para verificar a fila após o tempo mínimo
@@ -447,26 +448,46 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        const numColumns = Math.min(Math.floor(window.innerWidth / 500), 4);
-        const columns = [];
-        for (let i = 0; i < numColumns; i++) {
+        // Detecta se é dispositivo móvel
+        const isMobile = window.innerWidth <= 768;
+        
+        if (isMobile) {
+            // MOBILE: Apenas uma coluna com scroll simples
             const colDiv = document.createElement('div');
             colDiv.className = 'history-column';
-            columns.push(colDiv);
             historyContainer.appendChild(colDiv);
+            
+            // Adiciona mensagens em ordem cronológica inversa (mais recente primeiro)
+            const reversed = [...history].reverse();
+            reversed.forEach((msg) => {
+                colDiv.appendChild(createHistoryCard(msg));
+            });
+            
+            // Sem animações complexas no mobile
+            log('Modo memória mobile ativado - scroll vertical simples');
+        } else {
+            // DESKTOP: Mantém a lógica original com múltiplas colunas
+            const numColumns = Math.min(Math.floor(window.innerWidth / 500), 4);
+            const columns = [];
+            for (let i = 0; i < numColumns; i++) {
+                const colDiv = document.createElement('div');
+                colDiv.className = 'history-column';
+                columns.push(colDiv);
+                historyContainer.appendChild(colDiv);
+            }
+
+            // Embaralha as mensagens para exibição randômica
+            const shuffled = [...history].sort(() => Math.random() - 0.5);
+
+            // Distribui as mensagens nas colunas
+            shuffled.forEach((msg, index) => {
+                const colIndex = index % numColumns;
+                columns[colIndex].appendChild(createHistoryCard(msg));
+            });
+
+            // Inicia animações após criar as colunas
+            startHistoryAnimations();
         }
-
-        // Embaralha as mensagens para exibição randômica
-        const shuffled = [...history].sort(() => Math.random() - 0.5);
-
-        // Distribui as mensagens nas colunas
-        shuffled.forEach((msg, index) => {
-            const colIndex = index % numColumns;
-            columns[colIndex].appendChild(createHistoryCard(msg));
-        });
-
-        // Inicia animações após criar as colunas
-        startHistoryAnimations();
     };
 
     const createHistoryCard = (msg) => {
